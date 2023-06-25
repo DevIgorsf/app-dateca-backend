@@ -1,4 +1,4 @@
-package com.dat.dateca.domain.usuario;
+package com.dat.dateca.domain.user;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Usuario implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

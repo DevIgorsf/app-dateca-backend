@@ -1,8 +1,8 @@
 package com.dat.dateca.controller;
 
 
-import com.dat.dateca.domain.usuario.DadosAutenticacao;
-import com.dat.dateca.domain.usuario.Usuario;
+import com.dat.dateca.domain.user.AuthenticationData;
+import com.dat.dateca.domain.user.User;
 import com.dat.dateca.security.DadosTokenJWT;
 import com.dat.dateca.security.TokenService;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/login")
-public class AutenticacaoController {
+public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager manager;
@@ -26,11 +26,11 @@ public class AutenticacaoController {
     private TokenService tokenService;
 
     @PostMapping
-    public ResponseEntity efetuarLogin(@RequestBody @Valid DadosAutenticacao dados) {
+    public ResponseEntity efetuarLogin(@RequestBody @Valid AuthenticationData dados) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(dados.login(), dados.senha());
         var authentication = manager.authenticate(authenticationToken);
 
-        var tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
+        var tokenJWT = tokenService.gerarToken((User) authentication.getPrincipal());
 
         return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
     }
