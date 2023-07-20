@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ProfessorService {
 
@@ -24,9 +26,20 @@ public class ProfessorService {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         usuario.setLogin(professorCreate.registrationNumber().toString());
         usuario.setPassword(encoder.encode("123456"));
-        usuario.setRoles(RoleEnum.ROLE_PROFESSOR);
+        usuario.setRoles(RoleEnum.PROFESSOR);
         userRepository.save(usuario);
 
         return new ProfessorCreateDTO(professor);
+    }
+
+    public List<Professor> getAll() {
+        List<Professor> professorList = professorRepository.findAll();
+        return professorList;
+    }
+
+    public String deleteProfessor(Long id) {
+        professorRepository.deleteById(id);
+
+        return "Excluido com sucesso";
     }
 }
