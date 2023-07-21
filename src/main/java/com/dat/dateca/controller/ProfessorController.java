@@ -1,10 +1,6 @@
 package com.dat.dateca.controller;
 
-import com.dat.dateca.domain.professor.Professor;
-import com.dat.dateca.domain.professor.ProfessorCreate;
-import com.dat.dateca.domain.professor.ProfessorCreateDTO;
-import com.dat.dateca.domain.professor.ProfessorService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.dat.dateca.domain.professor.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,18 +19,28 @@ public class ProfessorController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<ProfessorCreateDTO> createProfessor(@RequestBody @Valid ProfessorCreate professorCreate) {
+    public ResponseEntity<ProfessorDTO> createProfessor(@RequestBody @Valid ProfessorCreate professorCreate) {
         return ResponseEntity.status(HttpStatus.CREATED).body(professorService.createProfessor(professorCreate));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProfessorDTO> getProfessor(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessor(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProfessorDTO> updateProfessor(@PathVariable Long id, @RequestBody @Valid ProfessorUpdate professorUpdate) {
+        return ResponseEntity.status(HttpStatus.OK).body(professorService.updateProfessor(id, professorUpdate));
+    }
+
     @GetMapping
-    public ResponseEntity<List<Professor>> getAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(professorService.getAll());
+    public ResponseEntity<List<ProfessorDTO>> getAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(professorService.getAllProfessors());
     }
 
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> deleteProfessor(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProfessor(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.deleteProfessor(id));
     }
 }

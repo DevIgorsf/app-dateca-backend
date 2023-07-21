@@ -31,4 +31,19 @@ public class Professor {
         this.email = professorCreate.email();
         this.phone = professorCreate.phone();
     }
+
+    public void updateProfessor(ProfessorUpdate professorUpdate) {
+        if(professorUpdate.registrationNumber() != null) {
+            this.registrationNumber = professorUpdate.registrationNumber();
+        }
+        if(professorUpdate.name() != null) {
+            this.name = professorUpdate.name();
+        }
+        if(professorUpdate.email() != null) {
+            this.email = professorUpdate.email();
+        }
+        if(professorUpdate.phone() != null) {
+            this.phone = professorUpdate.phone();
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.dat.dateca.domain.professor;
 import com.dat.dateca.domain.user.RoleEnum;
 import com.dat.dateca.domain.user.User;
 import com.dat.dateca.domain.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class ProfessorService {
     @Autowired
     UserRepository userRepository;
 
-    public ProfessorCreateDTO createProfessor(ProfessorCreate professorCreate) {
+    public ProfessorDTO createProfessor(ProfessorCreate professorCreate) {
         var professor = new Professor(professorCreate);
         professorRepository.save(professor);
 
@@ -29,17 +30,42 @@ public class ProfessorService {
         usuario.setRoles(RoleEnum.PROFESSOR);
         userRepository.save(usuario);
 
-        return new ProfessorCreateDTO(professor);
+        return new ProfessorDTO(professor);
     }
 
-    public List<Professor> getAll() {
-        List<Professor> professorList = professorRepository.findAll();
+    public List<ProfessorDTO> getAllProfessors() {
+        List<ProfessorDTO> professorList = professorRepository.findAll()
+                .stream().map(ProfessorDTO::new).toList();
+
+        if(professorList.isEmpty()) {
+            throw new EntityNotFoundException("Não há professores cadastrados");
+        }
+
         return professorList;
     }
 
     public String deleteProfessor(Long id) {
-        professorRepository.deleteById(id);
+        Professor professor = professorRepository.getReferenceById(id);
+        professorRepository.delete(professor);
 
         return "Excluido com sucesso";
+    }
+
+    public ProfessorDTO getProfessor(Long id) {
+        var professor = professorRepository.findById(id);
+        if(professor.isEmpty()) {
+            throw new EntityNotFoundException("Professor não encontrado");
+        }
+        return new ProfessorDTO(professor.get());
+    }
+
+    public ProfessorDTO updateProfessor(Long id, ProfessorUpdate professorUpdate) {
+        var professorOptional = professorRepository.findById(id);
+        if( professorOptional.isEmpty()) {
+            throw new EntityNotFoundException("Professor não encontrado");
+        }
+        Professor professor =  professorOptional.get();
+        professor.updateProfessor(professorUpdate);
+        return new ProfessorDTO(professor);
     }
 }
