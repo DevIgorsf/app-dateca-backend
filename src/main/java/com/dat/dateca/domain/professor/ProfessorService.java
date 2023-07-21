@@ -66,6 +66,7 @@ public class ProfessorService {
         }
         Professor professor =  professorOptional.get();
         professor.updateProfessor(professorUpdate);
+        professorRepository.save(professor);
         return new ProfessorDTO(professor);
     }
 }
