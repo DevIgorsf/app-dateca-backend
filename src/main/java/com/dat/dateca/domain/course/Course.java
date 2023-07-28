@@ -32,4 +32,19 @@ public class Course {
         this.semester = courseDTO.semester();
         this.professorList = courseDTO.professorList();
     }
+
+    public void updateCourse(CourseUpdate courseUpdate) {
+        if(courseUpdate.code() != null) {
+            this.code = courseUpdate.code();
+        }
+        if(courseUpdate.name() != null) {
+            this.name = courseUpdate.name();
+        }
+        if(courseUpdate.semester() != ' ') {
+            this.semester = courseUpdate.semester();
+        }
+        if(!courseUpdate.professorList().isEmpty()) {
+            this.professorList = courseUpdate.professorList();
+        }
+    }
 }

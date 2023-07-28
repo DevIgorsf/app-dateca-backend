@@ -37,4 +37,23 @@ public class CourseService {
 
         return "Excluido com sucesso";
     }
+
+    public CourseDTO getCourse(Long id) {
+        var course = courseRepository.findById(id);
+        if(course.isEmpty()) {
+            throw new EntityNotFoundException("Matéria não encontrada");
+        }
+        return new CourseDTO(course.get());
+    }
+
+    public CourseDTO updateCourse(Long id, CourseUpdate courseUpdate) {
+        var courseOptional = courseRepository.findById(id);
+        if( courseOptional.isEmpty()) {
+            throw new EntityNotFoundException("Professor não encontrado");
+        }
+        Course course =  courseOptional.get();
+        course.updateCourse(courseUpdate);
+        courseRepository.save(course);
+        return new CourseDTO(course);
+    }
 }

@@ -2,6 +2,10 @@ package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.course.CourseDTO;
 import com.dat.dateca.domain.course.CourseService;
+import com.dat.dateca.domain.course.CourseUpdate;
+import com.dat.dateca.domain.professor.ProfessorDTO;
+import com.dat.dateca.domain.professor.ProfessorUpdate;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,8 +22,18 @@ public class CourseController {
     private CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<?> createCourse (@RequestBody CourseDTO courseDTO) {
+    public ResponseEntity<CourseDTO> createCourse (@RequestBody CourseDTO courseDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(courseDTO));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseDTO> getCourse(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourse(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long id, @RequestBody @Valid CourseUpdate courseUpdate) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(id, courseUpdate));
     }
 
     @GetMapping
@@ -28,7 +42,7 @@ public class CourseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> getAllCourse(@RequestParam Long id) {
+    public ResponseEntity<String> getAllCourse(@RequestParam Long id) {
         return ResponseEntity.ok().body(courseService.deleteCourse(id));
     }
 
