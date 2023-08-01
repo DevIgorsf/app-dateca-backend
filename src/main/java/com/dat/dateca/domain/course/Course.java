@@ -23,7 +23,7 @@ public class Course {
     int semester;
     @ManyToMany
     List<Professor> professorList;
-    @ManyToMany
+    @OneToMany(mappedBy="course")
     List<Question> questionList;
 
     public Course(CourseDTO courseDTO) {
