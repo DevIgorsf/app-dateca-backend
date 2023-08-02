@@ -56,4 +56,19 @@ public class CourseService {
         courseRepository.save(course);
         return new CourseDTO(course);
     }
+
+    public List<CourseDTO> getCourseByProfessor(Long id) {
+        List<CourseDTO> courseList = courseRepository.findByProfessorListId(id)
+                .stream().map(CourseDTO::new).toList();
+        if(courseList.isEmpty()) {
+            throw new EntityNotFoundException("Não há professores cadastrados");
+        }
+
+        return courseList;
+
+    }
+
+    public Long getCourseData() {
+        return courseRepository.count();
+    }
 }

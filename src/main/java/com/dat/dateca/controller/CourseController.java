@@ -5,14 +5,18 @@ import com.dat.dateca.domain.course.CourseService;
 import com.dat.dateca.domain.course.CourseUpdate;
 import com.dat.dateca.domain.professor.ProfessorDTO;
 import com.dat.dateca.domain.professor.ProfessorUpdate;
+import com.dat.dateca.domain.user.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/materia")
@@ -44,6 +48,18 @@ public class CourseController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> getAllCourse(@RequestParam Long id) {
         return ResponseEntity.ok().body(courseService.deleteCourse(id));
+    }
+
+    @GetMapping("/professor")
+    public ResponseEntity<List<CourseDTO>> getCourseByProfessor(HttpServletRequest request) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long id = ((User)principal).getId();
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseByProfessor(id));
+    }
+
+    @GetMapping("/dados")
+    public ResponseEntity<Long> getCourseData() {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseData());
     }
 
 }
