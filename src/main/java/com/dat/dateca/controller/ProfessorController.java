@@ -43,4 +43,9 @@ public class ProfessorController {
     public ResponseEntity<String> deleteProfessor(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.deleteProfessor(id));
     }
+
+    @GetMapping("/dados")
+    public ResponseEntity<Long> getProfessorData() {
+        return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessorData());
+    }
 }

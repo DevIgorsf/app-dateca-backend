@@ -69,4 +69,8 @@ public class ProfessorService {
         professorRepository.save(professor);
         return new ProfessorDTO(professor);
     }
+
+    public Long getProfessorData() {
+        return professorRepository.count();
+    }
 }
