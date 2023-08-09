@@ -1,6 +1,5 @@
-package com.dat.dateca.security;
+package com.dat.dateca.infra.security;
 
-import com.dat.dateca.domain.user.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

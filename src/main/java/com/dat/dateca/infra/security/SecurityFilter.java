@@ -1,4 +1,4 @@
-package com.dat.dateca.security;
+package com.dat.dateca.infra.security;
 
 import com.dat.dateca.domain.user.UserRepository;
 import jakarta.servlet.FilterChain;

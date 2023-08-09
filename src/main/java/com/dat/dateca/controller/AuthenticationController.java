@@ -3,8 +3,8 @@ package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.user.AuthenticationData;
 import com.dat.dateca.domain.user.User;
-import com.dat.dateca.security.DadosTokenJWT;
-import com.dat.dateca.security.TokenService;
+import com.dat.dateca.infra.security.DadosTokenJWT;
+import com.dat.dateca.infra.security.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.dat.dateca.security;
+package com.dat.dateca.infra.security;
 
 public record DadosTokenJWT(String token) {
 }

@@ -1,4 +1,4 @@
-package com.dat.dateca.security;
+package com.dat.dateca.infra.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
