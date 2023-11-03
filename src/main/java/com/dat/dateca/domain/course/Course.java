@@ -1,13 +1,12 @@
 package com.dat.dateca.domain.course;
 
 import com.dat.dateca.domain.professor.Professor;
+import com.dat.dateca.domain.question.Question;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter

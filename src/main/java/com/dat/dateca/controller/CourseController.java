@@ -3,12 +3,9 @@ package com.dat.dateca.controller;
 import com.dat.dateca.domain.course.CourseDTO;
 import com.dat.dateca.domain.course.CourseService;
 import com.dat.dateca.domain.course.CourseUpdate;
-import com.dat.dateca.domain.professor.ProfessorDTO;
-import com.dat.dateca.domain.professor.ProfessorUpdate;
 import com.dat.dateca.domain.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/materia")
