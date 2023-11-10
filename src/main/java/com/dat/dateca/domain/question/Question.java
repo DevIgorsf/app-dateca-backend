@@ -5,9 +5,11 @@ import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.question.QuestionTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)

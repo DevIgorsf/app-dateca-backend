@@ -3,11 +3,13 @@ package com.dat.dateca.domain.question;
 import com.dat.dateca.domain.professor.Professor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @PrimaryKeyJoinColumn(name="id")

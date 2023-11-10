@@ -1,6 +1,7 @@
 package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.question.QuestionForm;
+import com.dat.dateca.domain.question.QuestionMultipleDTO;
 import com.dat.dateca.domain.question.QuestionService;
 import com.dat.dateca.domain.user.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,6 +28,8 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(questionService.createQuestion(questionForm, registrationNumber));
     }
 
-//    @GetMapping
-//    public ResponseEntity<?>
+    @GetMapping
+    public ResponseEntity<List<QuestionMultipleDTO>> getAllQuestion() {
+        return ResponseEntity.ok().body(questionService.getAllQuestion());
+    }
 }
