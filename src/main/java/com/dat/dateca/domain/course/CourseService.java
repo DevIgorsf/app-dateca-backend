@@ -11,8 +11,8 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
 
-    public CourseDTO createCourse(CourseDTO courseDTO) {
-        Course course = new Course(courseDTO);
+    public CourseDTO createCourse(CourseForm courseForm) {
+        Course course = new Course(courseForm);
         Course courseSaved = courseRepository.save(course);
 
         return new CourseDTO(courseSaved);

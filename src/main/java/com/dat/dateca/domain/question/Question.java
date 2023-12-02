@@ -1,6 +1,7 @@
 package com.dat.dateca.domain.question;
 
 import com.dat.dateca.domain.course.Course;
+import com.dat.dateca.domain.course.CourseDTO;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.question.QuestionTypeEnum;
 import jakarta.persistence.*;
@@ -18,6 +19,8 @@ public abstract class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String statement;
     @Enumerated(EnumType.STRING)
     private PointsEnum pointsEnum;
@@ -35,5 +38,15 @@ public abstract class Question {
         this.questionTypeEnum = questionTypeEnum;
         this.course= course;
         this.professorCreate = professorCreate;
+    }
+
+    public CourseDTO getCourseDTO() {
+        return new CourseDTO(this.getCourse());
+    }
+
+    protected void updateQuestion(String statement, PointsEnum pointsEnum, Course course) {
+        this.statement = statement;
+        this.pointsEnum = pointsEnum;
+        this.course = course;
     }
 }

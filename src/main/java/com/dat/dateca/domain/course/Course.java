@@ -1,6 +1,7 @@
 package com.dat.dateca.domain.course;
 
 import com.dat.dateca.domain.professor.Professor;
+import com.dat.dateca.domain.professor.ProfessorDTO;
 import com.dat.dateca.domain.question.Question;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,11 +26,11 @@ public class Course {
     @OneToMany(mappedBy="course")
     List<Question> questionList;
 
-    public Course(CourseDTO courseDTO) {
-        this.code = courseDTO.code();
-        this.name = courseDTO.name();
-        this.semester = courseDTO.semester();
-        this.professorList = courseDTO.professorList();
+    public Course(CourseForm courseForm) {
+        this.code = courseForm.code();
+        this.name = courseForm.name();
+        this.semester = courseForm.semester();
+        this.professorList = courseForm.professorList();
     }
 
     public void updateCourse(CourseUpdate courseUpdate) {
@@ -45,5 +46,9 @@ public class Course {
         if(!courseUpdate.professorList().isEmpty()) {
             this.professorList = courseUpdate.professorList();
         }
+    }
+
+    public List<ProfessorDTO> getProfessorListDTO() {
+        return getProfessorList().stream().map(ProfessorDTO::new).toList();
     }
 }

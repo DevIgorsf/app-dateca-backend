@@ -1,24 +1,22 @@
 package com.dat.dateca.domain.course;
 
 import com.dat.dateca.domain.professor.Professor;
-import com.dat.dateca.domain.professor.ProfessorDTO;
-import lombok.Getter;
 
 import java.util.List;
 
-public record CourseDTO(
+public record CourseForm(
         Long id,
         String code,
         String name,
         int semester,
-        List<ProfessorDTO> professorList
+        List<Professor> professorList
 ) {
-    public CourseDTO(Course courseSaved) {
+    public CourseForm(Course courseSaved) {
         this(
                 courseSaved.getId(),
                 courseSaved.getCode(),
                 courseSaved.getName(),
                 courseSaved.getSemester(),
-                courseSaved.getProfessorListDTO());
+                courseSaved.getProfessorList());
     }
 }

@@ -1,6 +1,7 @@
 package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.course.CourseDTO;
+import com.dat.dateca.domain.course.CourseForm;
 import com.dat.dateca.domain.course.CourseService;
 import com.dat.dateca.domain.course.CourseUpdate;
 import com.dat.dateca.domain.user.User;
@@ -22,8 +23,8 @@ public class CourseController {
     private CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<CourseDTO> createCourse (@RequestBody CourseDTO courseDTO) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(courseDTO));
+    public ResponseEntity<CourseDTO> createCourse (@RequestBody CourseForm courseForm) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(courseForm));
     }
 
     @GetMapping("/{id}")

@@ -1,27 +1,20 @@
 package com.dat.dateca.domain.question;
 
-import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseDTO;
 
-public record QuestionMultipleDTO(
+public record QuestionMultipleChoiceRandDTO(
         Long id,
         String statement,
-        String pointsEnum,
-        CourseDTO course,
-        Character correctAnswer,
         String alternativeA,
         String alternativeB,
         String alternativeC,
         String alternativeD,
         String alternativeE
 ) {
-    public QuestionMultipleDTO(QuestionMultipleChoice questionMultipleChoice) {
+    public QuestionMultipleChoiceRandDTO(QuestionMultipleChoice questionMultipleChoice) {
         this(
                 questionMultipleChoice.getId(),
                 questionMultipleChoice.getStatement(),
-                questionMultipleChoice.getPointsEnum().getDescription(),
-                questionMultipleChoice.getCourseDTO(),
-                questionMultipleChoice.getCorrectAnswer(),
                 questionMultipleChoice.getAlternativeA(),
                 questionMultipleChoice.getAlternativeB(),
                 questionMultipleChoice.getAlternativeC(),

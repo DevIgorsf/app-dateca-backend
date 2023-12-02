@@ -33,6 +33,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/professor/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/materia/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/questao/**").hasAuthority("ADMIN")
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated()
                 .and().addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -52,7 +53,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:4200")
+                .allowedOrigins("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
     }
 
