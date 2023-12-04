@@ -1,5 +1,7 @@
 package com.dat.dateca.domain.question;
 
+import com.dat.dateca.domain.professor.Professor;
+import com.dat.dateca.domain.student.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

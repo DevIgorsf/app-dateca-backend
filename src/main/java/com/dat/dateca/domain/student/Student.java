@@ -4,12 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Student {
@@ -22,7 +24,19 @@ public class Student {
     private String phone;
     private String email;
     private int semester;
-//    int points;
+
+    public Student(StudentCadastro studentCadastro) {
+        this.registrationNumber = studentCadastro.registrationNumber();
+        this.name = studentCadastro.name();
+        this.phone = studentCadastro.phone();
+        this.email = studentCadastro.email();
+    }
+    int points;
+
+    public void addPontuação(int key) {
+        this.points += key;
+    }
+
 //    List<Question> questionList;
 //    List<Course> courseList;
 //    List<Student> friends;

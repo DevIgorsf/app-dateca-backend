@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/questao")
@@ -50,10 +52,12 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(questionService.deleteQuestion(id));
     }
 
-//    @PostMapping("/answerQuestion/{id}")
-//    public ResponseEntity<?> answerQuestion(HttpServletRequest request,@PathVariable Long id, @RequestBody @Valid QuestionForm questionForm) {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String registrationNumber = ((User)principal).getLogin();
-//        return ResponseEntity.status(HttpStatus.OK).body(questionService.answerQuestion(questionForm, registrationNumber));
-//    }
+    @PostMapping("/answerQuestion/{id}")
+    @Transactional
+    public ResponseEntity<QuestionAnswerDTO> answerQuestion(HttpServletRequest request,@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String registrationNumber = ((User)principal).getLogin();
+        String correctAnswer = requestBody.get("correctAnswer");
+        return ResponseEntity.status(HttpStatus.OK).body(questionService.answerQuestion(id, correctAnswer, registrationNumber));
+    }
 }

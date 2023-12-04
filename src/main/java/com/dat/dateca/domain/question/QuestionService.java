@@ -4,13 +4,17 @@ import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseRepository;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorRepository;
+import com.dat.dateca.domain.student.Student;
+import com.dat.dateca.domain.student.StudentRepository;
 import com.dat.dateca.domain.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -27,6 +31,9 @@ public class QuestionService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     public QuestionMultipleChoice createQuestion(QuestionForm questionForm, String registrationNumber) {
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
@@ -95,6 +102,26 @@ public class QuestionService {
         return new QuestionMultipleChoiceRandDTO(question);
     }
 
-//    public Object answerQuestion(QuestionForm questionForm, String registrationNumber) {
-//    }
+    public QuestionAnswerDTO answerQuestion(Long id, String answer, String registrationNumber) {
+        var optionalQuestion = questionMultipleChoiceRepository.findById(id);
+        Student stundent = studentRepository.findByRegistrationNumber(registrationNumber);
+
+        if (optionalQuestion.isEmpty()) {
+            throw new EntityNotFoundException("Nenhuma pergunta do tipo MULTIPLE_CHOICE encontrada");
+        }
+
+        QuestionMultipleChoice question = optionalQuestion.get();
+
+
+        char correctAnswerChar = answer.charAt(0);
+
+        int result =  Character.compare(question.getCorrectAnswer(), correctAnswerChar);
+        if(result == 0) {
+            stundent.addPontuação(question.getPointsEnum().getKey());
+            studentRepository.save(stundent);
+            return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, true);
+        }
+
+        return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, false);
+    }
 }
