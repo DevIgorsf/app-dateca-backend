@@ -37,6 +37,12 @@ public class Student {
         this.points += key;
     }
 
+    public void update(StudentCadastro studentCadastro) {
+        this.name = studentCadastro.name();
+        this.email = studentCadastro.email();
+        this.phone = studentCadastro.phone();
+    }
+
 //    List<Question> questionList;
 //    List<Course> courseList;
 //    List<Student> friends;

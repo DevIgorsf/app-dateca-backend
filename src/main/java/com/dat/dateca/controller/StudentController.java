@@ -51,10 +51,10 @@ public class StudentController {
     }
 
     @PutMapping("/perfil")
-    public ResponseEntity<Student> updatePerfil(@RequestBody @Valid StudentCadastro studentCadastro) {
+    public ResponseEntity<StudentDTO> updatePerfil(@RequestBody @Valid StudentCadastro studentCadastro) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String registrationNumber = ((User)principal).getLogin();
-        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.updatePerfil(registrationNumber));
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.updatePerfil(registrationNumber, studentCadastro));
     }
 
 }

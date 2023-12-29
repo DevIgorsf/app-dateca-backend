@@ -77,9 +77,12 @@ public class StudentService {
         return student;
     }
 
-    public Student updatePerfil(String registrationNumber) {
+    public StudentDTO updatePerfil(String registrationNumber,StudentCadastro studentCadastro) {
         Student student = studentRepository.findByRegistrationNumber(registrationNumber);
 
-        studentSaved = student.update(student);
+        student.update(studentCadastro);
+        studentRepository.save(student);
+
+        return new StudentDTO(student);
     }
 }
