@@ -47,7 +47,7 @@ public class StudentController {
     public ResponseEntity<Student> getPerfil() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String registrationNumber = ((User)principal).getLogin();
-        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.getPerfil(registrationNumber));
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getPerfil(registrationNumber));
     }
 
     @PutMapping("/perfil")
