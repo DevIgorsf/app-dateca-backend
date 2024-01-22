@@ -3,10 +3,13 @@ package com.dat.dateca.controller;
 import com.dat.dateca.domain.professor.*;
 import com.dat.dateca.domain.student.StudentService;
 import com.dat.dateca.domain.student.StudentWithIndex;
+import com.dat.dateca.domain.user.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,4 +61,12 @@ public class ProfessorController {
     public ResponseEntity<List<StudentWithIndex>> getRanking() {
         return ResponseEntity.status(HttpStatus.OK).body(studentService.rankingAll());
     }
+
+//    @PostMapping
+//    @Transactional
+//    public ResponseEntity<ProfessorDTO> updatePassword(HttpServletRequest request, @RequestBody @Valid ProfessorCreate professorCreate) {
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String registrationNumber = ((User)principal).getLogin();
+//        return ResponseEntity.status(HttpStatus.OK).body(professorService.updatePassword(registrationNumber, professorCreate));
+//    }
 }
