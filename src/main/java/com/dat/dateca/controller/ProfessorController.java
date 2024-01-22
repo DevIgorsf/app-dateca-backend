@@ -64,9 +64,9 @@ public class ProfessorController {
 
 //    @PostMapping
 //    @Transactional
-//    public ResponseEntity<ProfessorDTO> updatePassword(HttpServletRequest request, @RequestBody @Valid ProfessorCreate professorCreate) {
+//    public ResponseEntity<ProfessorDTO> updatePassword(HttpServletRequest request, @RequestBody @Valid String newPassword) {
 //        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        String registrationNumber = ((User)principal).getLogin();
-//        return ResponseEntity.status(HttpStatus.OK).body(professorService.updatePassword(registrationNumber, professorCreate));
+//        return ResponseEntity.status(HttpStatus.OK).body(professorService.updatePassword(registrationNumber, newPassword));
 //    }
 }

@@ -73,4 +73,14 @@ public class ProfessorService {
     public Long getProfessorData() {
         return professorRepository.count();
     }
+
+//    public ProfessorDTO updatePassword(String registrationNumber, String newPassword) {
+//        User usuario = (User) userRepository.findByLogin(registrationNumber);
+//
+//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//        usuario.setPassword(encoder.encode(newPassword));
+//        userRepository.save(usuario);
+//
+//        return null;
+//    }
 }
