@@ -40,7 +40,7 @@ public class StudentController {
 
     @GetMapping("/ranking-geral")
     public ResponseEntity<List<StudentWithIndex>> rankingAll() {
-        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.rankingAll());
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.rankingAll());
     }
 
     @GetMapping("/perfil")

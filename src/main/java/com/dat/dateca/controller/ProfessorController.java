@@ -1,6 +1,8 @@
 package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.professor.*;
+import com.dat.dateca.domain.student.StudentService;
+import com.dat.dateca.domain.student.StudentWithIndex;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,9 @@ public class ProfessorController {
 
     @Autowired
     ProfessorService professorService;
+
+    @Autowired
+    private StudentService studentService;
 
     @PostMapping
     @Transactional
@@ -47,5 +52,10 @@ public class ProfessorController {
     @GetMapping("/dados")
     public ResponseEntity<Long> getProfessorData() {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessorData());
+    }
+
+    @GetMapping("/ranking")
+    public ResponseEntity<List<StudentWithIndex>> getRanking() {
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.rankingAll());
     }
 }
