@@ -57,16 +57,24 @@ public class ProfessorController {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessorData());
     }
 
+    @GetMapping("/perfil")
+    public ResponseEntity<ProfessorDTO> getProfile() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String registrationNumber = ((User)principal).getLogin();
+        return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfile(registrationNumber));
+    }
+
     @GetMapping("/ranking")
     public ResponseEntity<List<StudentWithIndex>> getRanking() {
         return ResponseEntity.status(HttpStatus.OK).body(studentService.rankingAll());
     }
 
-//    @PostMapping
-//    @Transactional
-//    public ResponseEntity<ProfessorDTO> updatePassword(HttpServletRequest request, @RequestBody @Valid String newPassword) {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String registrationNumber = ((User)principal).getLogin();
-//        return ResponseEntity.status(HttpStatus.OK).body(professorService.updatePassword(registrationNumber, newPassword));
-//    }
+    @PostMapping("/updatePassword")
+    @Transactional
+    public ResponseEntity<?> updatePassword(HttpServletRequest request, @RequestBody @Valid String newPassword) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String registrationNumber = ((User)principal).getLogin();
+        professorService.updatePassword(registrationNumber, newPassword);
+        return ResponseEntity.ok().build();
+    }
 }

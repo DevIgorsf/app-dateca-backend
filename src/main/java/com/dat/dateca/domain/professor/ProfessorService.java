@@ -74,13 +74,17 @@ public class ProfessorService {
         return professorRepository.count();
     }
 
-//    public ProfessorDTO updatePassword(String registrationNumber, String newPassword) {
-//        User usuario = (User) userRepository.findByLogin(registrationNumber);
-//
-//        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-//        usuario.setPassword(encoder.encode(newPassword));
-//        userRepository.save(usuario);
-//
-//        return null;
-//    }
+    public ProfessorDTO getProfile(String registrationNumber) {
+        var professorOptional = professorRepository.findByRegistrationNumber(registrationNumber);
+
+        return new ProfessorDTO(professorOptional);
+    }
+
+    public void updatePassword(String registrationNumber, String newPassword) {
+        User usuario = (User) userRepository.findByLogin(registrationNumber);
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        usuario.setPassword(encoder.encode(newPassword));
+        userRepository.save(usuario);
+    }
 }
