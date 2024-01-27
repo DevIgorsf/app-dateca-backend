@@ -60,4 +60,9 @@ public class QuestionController {
         String correctAnswer = requestBody.get("correctAnswer");
         return ResponseEntity.status(HttpStatus.OK).body(questionService.answerQuestion(id, correctAnswer, registrationNumber));
     }
+
+    @GetMapping("/dados")
+    public ResponseEntity<Long> getQuestionData() {
+        return ResponseEntity.status(HttpStatus.OK).body(questionService.getQuestionData());
+    }
 }

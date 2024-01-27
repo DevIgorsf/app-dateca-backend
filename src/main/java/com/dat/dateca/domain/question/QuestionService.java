@@ -124,4 +124,8 @@ public class QuestionService {
 
         return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, false);
     }
+
+    public Long getQuestionData() {
+        return questionMultipleChoiceRepository.count();
+    }
 }
