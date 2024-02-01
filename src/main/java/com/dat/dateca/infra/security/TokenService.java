@@ -25,6 +25,7 @@ public class TokenService {
                     .withIssuer("API Dateca")
                     .withSubject(user.getLogin())
                     .withExpiresAt(dataExpiracao())
+                    .withClaim("role", user.getRoles().name())
                     .sign(algoritmo);
         } catch (JWTCreationException exception){
             throw new RuntimeException("erro ao gerar token jwt", exception);
