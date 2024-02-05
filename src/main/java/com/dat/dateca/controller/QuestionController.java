@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +21,9 @@ import java.util.Map;
 public class QuestionController {
     @Autowired
     private QuestionService questionService;
+
+    @Autowired
+    private ImageQuestionRepository imageQuestionRepository;
 
     @PostMapping
     public ResponseEntity<QuestionMultipleChoice> createQuestion(HttpServletRequest request, @RequestBody @Valid QuestionForm questionForm) {
@@ -64,5 +69,23 @@ public class QuestionController {
     @GetMapping("/dados")
     public ResponseEntity<Long> getQuestionData() {
         return ResponseEntity.status(HttpStatus.OK).body(questionService.getQuestionData());
+    }
+
+    @PostMapping("/imagens")
+    public ResponseEntity<List<Long>> salvar(@RequestPart("imageFile") MultipartFile[] files) {
+        try {
+
+            List<Long> imagensSalvas = questionService.salvarImagens(files);
+
+            return ResponseEntity.ok(imagensSalvas);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/images")
+    public List<ImageQuestion> getAll() {
+        return imageQuestionRepository.findAll();
     }
 }

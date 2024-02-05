@@ -7,12 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @PrimaryKeyJoinColumn(name="id")
 public class QuestionMultipleChoice extends Question {
+
+    private List<Long> idImages;
 
     private Character correctAnswer;
     @Lob
@@ -34,6 +38,7 @@ public class QuestionMultipleChoice extends Question {
 
     public QuestionMultipleChoice(QuestionForm questionForm, Professor professorCreate, Course course) {
         super(questionForm.statement(), questionForm.pointsEnum(), QuestionTypeEnum.MULTIPLE_CHOICE, course, professorCreate);
+        this.idImages = questionForm.idImages();
         this.correctAnswer = questionForm.correctAnswer();
         this.alternativeA = questionForm.alternativeA();
         this.alternativeB = questionForm.alternativeB();
@@ -44,6 +49,7 @@ public class QuestionMultipleChoice extends Question {
 
     public void updateQuestionMultipleChoice(QuestionForm questionForm, Course course) {
         super.updateQuestion(questionForm.statement(), questionForm.pointsEnum(), course);
+        this.idImages = questionForm.idImages();
         this.correctAnswer = questionForm.correctAnswer();
         this.alternativeA = questionForm.alternativeA();
         this.alternativeB = questionForm.alternativeB();

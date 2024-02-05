@@ -50,8 +50,8 @@ public class CourseController {
     @GetMapping("/professor")
     public ResponseEntity<List<CourseDTO>> getCourseByProfessor(HttpServletRequest request) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long id = ((User)principal).getId();
-        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseByProfessor(id));
+        String registrationNumber = ((User)principal).getLogin();
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseByProfessor(registrationNumber));
     }
 
     @GetMapping("/dados")

@@ -3,8 +3,12 @@ package com.dat.dateca.domain.question;
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseDTO;
 
+import java.util.List;
+
 public record QuestionMultipleDTO(
         Long id,
+
+        List<Long> IdImages,
         String statement,
         String pointsEnum,
         CourseDTO course,
@@ -18,6 +22,7 @@ public record QuestionMultipleDTO(
     public QuestionMultipleDTO(QuestionMultipleChoice questionMultipleChoice) {
         this(
                 questionMultipleChoice.getId(),
+                questionMultipleChoice.getIdImages(),
                 questionMultipleChoice.getStatement(),
                 questionMultipleChoice.getPointsEnum().getDescription(),
                 questionMultipleChoice.getCourseDTO(),

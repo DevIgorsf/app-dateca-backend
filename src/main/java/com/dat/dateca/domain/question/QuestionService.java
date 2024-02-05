@@ -12,10 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
@@ -34,6 +38,9 @@ public class QuestionService {
 
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private ImageQuestionRepository imageQuestionRepository;
 
     public QuestionMultipleChoice createQuestion(QuestionForm questionForm, String registrationNumber) {
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
@@ -127,5 +134,21 @@ public class QuestionService {
 
     public Long getQuestionData() {
         return questionMultipleChoiceRepository.count();
+    }
+
+    public List<Long> salvarImagens(MultipartFile[] files) throws IOException {
+        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            ImageQuestion imagem = new ImageQuestion();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+
+            imagensSalvas.add(imagem);
+        }
+
+        imageQuestionRepository.saveAll(imagensSalvas);
+
+        return imagensSalvas.stream().map(ImageQuestion::getId).collect(Collectors.toList());
     }
 }

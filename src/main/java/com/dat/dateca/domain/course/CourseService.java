@@ -1,5 +1,9 @@
 package com.dat.dateca.domain.course;
 
+import com.dat.dateca.domain.professor.Professor;
+import com.dat.dateca.domain.professor.ProfessorDTO;
+import com.dat.dateca.domain.professor.ProfessorRepository;
+import com.dat.dateca.domain.professor.ProfessorService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +14,9 @@ import java.util.List;
 public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private ProfessorRepository professorRepository;
 
     public CourseDTO createCourse(CourseForm courseForm) {
         Course course = new Course(courseForm);
@@ -23,7 +30,7 @@ public class CourseService {
                 .stream().map(CourseDTO::new).toList();
 
         if(courseList.isEmpty()) {
-            throw new EntityNotFoundException("Não há professores cadastrados");
+            throw new EntityNotFoundException("Não há cursos cadastrados");
         }
 
         return courseList;
@@ -55,8 +62,9 @@ public class CourseService {
         return new CourseDTO(course);
     }
 
-    public List<CourseDTO> getCourseByProfessor(Long id) {
-        List<CourseDTO> courseList = courseRepository.findByProfessorListId(id)
+    public List<CourseDTO> getCourseByProfessor(String registrationNumber) {
+        Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
+        List<CourseDTO> courseList = courseRepository.findByProfessorListId(professor.getId())
                 .stream().map(CourseDTO::new).toList();
         if(courseList.isEmpty()) {
             throw new EntityNotFoundException("Não há professores cadastrados");
