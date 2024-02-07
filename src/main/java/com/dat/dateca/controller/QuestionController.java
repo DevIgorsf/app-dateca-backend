@@ -84,8 +84,8 @@ public class QuestionController {
         }
     }
 
-    @GetMapping("/images")
-    public List<ImageQuestion> getAll() {
-        return imageQuestionRepository.findAll();
+    @GetMapping("/imagens/{idImages}")
+    public ImageQuestion getImagens(@PathVariable String idImages) {
+        return imageQuestionRepository.findById(Long.valueOf(idImages)).get();
     }
 }
