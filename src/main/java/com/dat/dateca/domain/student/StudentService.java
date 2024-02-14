@@ -1,7 +1,5 @@
 package com.dat.dateca.domain.student;
 
-import com.dat.dateca.domain.professor.Professor;
-import com.dat.dateca.domain.professor.ProfessorDTO;
 import com.dat.dateca.domain.user.RoleEnum;
 import com.dat.dateca.domain.user.User;
 import com.dat.dateca.domain.user.UserRepository;
@@ -10,10 +8,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Service
 public class StudentService {

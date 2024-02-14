@@ -1,8 +1,6 @@
 package com.dat.dateca.domain.course;
 
-import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorDTO;
-import lombok.Getter;
 
 import java.util.List;
 

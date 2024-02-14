@@ -8,7 +8,7 @@ import java.util.List;
 public record QuestionMultipleDTO(
         Long id,
 
-        List<Long> IdImages,
+        List<Long> idImages,
         String statement,
         String pointsEnum,
         CourseDTO course,

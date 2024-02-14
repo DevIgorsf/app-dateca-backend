@@ -1,9 +1,7 @@
 package com.dat.dateca.domain.course;
 
 import com.dat.dateca.domain.professor.Professor;
-import com.dat.dateca.domain.professor.ProfessorDTO;
 import com.dat.dateca.domain.professor.ProfessorRepository;
-import com.dat.dateca.domain.professor.ProfessorService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

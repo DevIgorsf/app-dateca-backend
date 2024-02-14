@@ -6,7 +6,7 @@ import java.util.List;
 
 public record QuestionMultipleChoiceRandDTO(
         Long id,
-        List<Long> IdImages,
+        List<Long> idImages,
         String statement,
         String alternativeA,
         String alternativeB,

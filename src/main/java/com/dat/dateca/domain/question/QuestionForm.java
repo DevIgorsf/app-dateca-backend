@@ -1,10 +1,6 @@
 package com.dat.dateca.domain.question;
 
-import com.dat.dateca.domain.course.Course;
-import com.dat.dateca.domain.professor.Professor;
-import com.dat.dateca.domain.question.QuestionTypeEnum;
 import jakarta.annotation.Nullable;
-import lombok.Setter;
 
 import java.util.List;
 
