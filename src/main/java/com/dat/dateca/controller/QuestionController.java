@@ -72,12 +72,34 @@ public class QuestionController {
     }
 
     @PostMapping("/imagens")
-    public ResponseEntity<List<Long>> salvar(@RequestPart("imageFile") MultipartFile[] files) {
+    public ResponseEntity<QuestionMultipleChoice> salvar(
+            @RequestParam("imageFile") MultipartFile[] files,
+            @RequestParam("statement") String statement,
+            @RequestParam("pointsEnum") String pointsEnum,
+            @RequestParam("course") Long course,
+            @RequestParam("correctAnswer") Character correctAnswer,
+            @RequestParam("alternativeA") String alternativeA,
+            @RequestParam("alternativeB") String alternativeB,
+            @RequestParam("alternativeC") String alternativeC,
+            @RequestParam("alternativeD") String alternativeD,
+            @RequestParam("alternativeE") String alternativeE) {
         try {
 
-            List<Long> imagensSalvas = questionService.salvarImagens(files);
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String registrationNumber = ((User)principal).getLogin();
 
-            return ResponseEntity.ok(imagensSalvas);
+            return ResponseEntity.ok(questionService.salvarImagens(
+                    registrationNumber,
+                    files,
+                    statement,
+                    pointsEnum,
+                    course,
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();

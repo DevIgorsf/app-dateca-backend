@@ -135,7 +135,19 @@ public class QuestionService {
         return questionMultipleChoiceRepository.count();
     }
 
-    public List<Long> salvarImagens(MultipartFile[] files) throws IOException {
+    public QuestionMultipleChoice salvarImagens(
+            String registrationNumber,
+            MultipartFile[] files,
+            String statement,
+            String pointsEnum,
+            Long course,
+            Character correctAnswer,
+            String alternativeA,
+            String alternativeB,
+            String alternativeC,
+            String alternativeD,
+            String alternativeE) throws IOException {
+
         List<ImageQuestion> imagensSalvas = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -148,6 +160,23 @@ public class QuestionService {
 
         imageQuestionRepository.saveAll(imagensSalvas);
 
-        return imagensSalvas.stream().map(ImageQuestion::getId).collect(Collectors.toList());
+        Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
+        Course courseSaved = courseRepository.findById(course).get();
+
+        var questionMultipleChoice = new QuestionMultipleChoice(statement,
+                imagensSalvas.stream().map(ImageQuestion::getId).collect(Collectors.toList()),
+                PointsEnum.fromString(pointsEnum),
+                courseSaved,
+                professor,
+                correctAnswer,
+                alternativeA,
+                alternativeB,
+                alternativeC,
+                alternativeD,
+                alternativeE);
+
+        questionMultipleChoiceRepository.save(questionMultipleChoice);
+
+        return questionMultipleChoice;
     }
 }
