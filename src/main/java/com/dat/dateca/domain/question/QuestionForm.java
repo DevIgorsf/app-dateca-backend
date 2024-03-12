@@ -7,8 +7,6 @@ import java.util.List;
 public record QuestionForm(
         @Nullable
         Long id,
-
-        List<Long> idImages,
         String statement,
         PointsEnum pointsEnum,
         Long course,

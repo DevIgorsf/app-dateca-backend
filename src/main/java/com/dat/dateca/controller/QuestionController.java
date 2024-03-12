@@ -26,10 +26,15 @@ public class QuestionController {
     private ImageQuestionRepository imageQuestionRepository;
 
     @PostMapping
-    public ResponseEntity<QuestionMultipleChoice> createQuestion(HttpServletRequest request, @RequestBody @Valid QuestionForm questionForm) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String registrationNumber = ((User)principal).getLogin();
-        return ResponseEntity.status(HttpStatus.CREATED).body(questionService.createQuestion(questionForm, registrationNumber));
+    public ResponseEntity<QuestionMultipleChoice> createQuestion(@RequestBody @Valid QuestionForm questionForm) {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String registrationNumber = ((User)principal).getLogin();
+            return ResponseEntity.status(HttpStatus.CREATED).body(questionService.createQuestion(questionForm, registrationNumber));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")
@@ -37,9 +42,14 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.OK).body(questionService.updateQuestion(id, questionForm));
     }
 
-    @GetMapping
+    @GetMapping("/images")
     public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestion() {
         return ResponseEntity.ok().body(questionService.getAllQuestion());
+    }
+
+    @GetMapping
+    public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestionWithoutImages() {
+        return ResponseEntity.ok().body(questionService.getAllQuestionWithoutImages());
     }
 
     @GetMapping("/{id}")
