@@ -33,7 +33,7 @@ public class Student {
     }
     int points;
 
-    public void addPontuação(int key) {
+    public void addPontuacao(int key) {
         this.points += key;
     }
 

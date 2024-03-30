@@ -90,7 +90,6 @@ public class QuestionService {
         QuestionMultipleChoice questionMultipleChoice =  questionOptional.get();
         Course course = courseRepository.findById(questionUpdate.course()).get();
         questionMultipleChoice.updateQuestionMultipleChoice(questionUpdate, course);
-        System.out.println(questionMultipleChoice);
         questionMultipleChoiceRepository.save(questionMultipleChoice);
 
         return new QuestionMultipleDTO(questionMultipleChoice);
@@ -130,12 +129,11 @@ public class QuestionService {
 
         QuestionMultipleChoice question = optionalQuestion.get();
 
-
         char correctAnswerChar = answer.charAt(0);
 
         int result =  Character.compare(question.getCorrectAnswer(), correctAnswerChar);
         if(result == 0) {
-            stundent.addPontuação(question.getPointsEnum().getKey());
+            stundent.addPontuacao(question.getPointsEnum().getKey());
             studentRepository.save(stundent);
             return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, true);
         }
