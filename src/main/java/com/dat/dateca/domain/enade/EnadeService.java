@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,9 +107,9 @@ public class EnadeService {
         return enadeRepository.count();
     }
 
-    public Enade salvarImagens(
+    public EnadeDTO salvarImagens(
             MultipartFile[] files,
-            Year ano,
+            int year,
             int number,
             String statement,
             String pointsEnum,
@@ -117,19 +118,10 @@ public class EnadeService {
             String alternativeB,
             String alternativeC,
             String alternativeD,
-            String alternativeE) {
-        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+            String alternativeE) throws IOException {
 
-        for (MultipartFile file : files) {
-            ImageQuestion imagem = new ImageQuestion();
-            imagem.setNome(file.getOriginalFilename());
-            imagem.setImagem(file.getBytes());
-
-            imagensSalvas.add(imagem);
-        }
-
-        var enade = new Enade(
-                ano,
+        Enade enade = new Enade(
+                year,
                 number,
                 statement,
                 PointsEnum.fromString(pointsEnum),
@@ -142,13 +134,35 @@ public class EnadeService {
 
         enadeRepository.save(enade);
 
+        List<ImageEnade> imagensSalvas = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            ImageEnade imagem = new ImageEnade();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setEnade(enade);
+
+            imagensSalvas.add(imagem);
+        }
+
         imageEnadeRepository.saveAll(imagensSalvas);
 
-        return questionMultipleChoice;
+        return new EnadeDTO(enade);
     }
 
     public List<ImageEnade> getImages(Long id) {
-        List<ImageEnade> imageEnadesList = imageEnadeRepository.(id);
-        return
+        List<ImageEnade> imageEnadesList = imageEnadeRepository.findByEnadeId(id);
+        return imageEnadesList;
+    }
+
+    public List<EnadeDTO> getAllEnadeWithoutImages() {
+        List<EnadeDTO> enadeList = enadeRepository.findAll()
+                .stream().map(EnadeDTO::new).toList();
+
+        if(enadeList.isEmpty()) {
+            throw new EntityNotFoundException("Não há questões cadastradas");
+        }
+
+        return enadeList;
     }
 }

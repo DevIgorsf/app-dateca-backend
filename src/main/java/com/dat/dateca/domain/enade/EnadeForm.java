@@ -5,7 +5,7 @@ import com.dat.dateca.domain.question.PointsEnum;
 import java.time.Year;
 
 public record EnadeForm(
-        Year ano,
+        Integer year,
         Integer number,
         String statement,
         PointsEnum pointsEnum,

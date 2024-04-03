@@ -8,7 +8,7 @@ import java.time.Year;
 public record EnadeDTO(
         @Nullable
         Long id,
-        Year ano,
+        Integer year,
         Integer number,
         String statement,
         PointsEnum pointsEnum,
@@ -22,7 +22,7 @@ public record EnadeDTO(
     public EnadeDTO(Enade enade) {
         this(
                 enade.getId(),
-                enade.getAno(),
+                enade.getYear(),
                 enade.getNumber(),
                 enade.getStatement(),
                 enade.getPointsEnum(),

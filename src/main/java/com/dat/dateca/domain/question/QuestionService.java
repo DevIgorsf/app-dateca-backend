@@ -111,7 +111,6 @@ public class QuestionService {
 
         Random random = new Random();
 
-        // Obter um índice aleatório da lista
         long indiceSorteado = random.nextLong(multipleChoiceIds.size());
 
         var question = questionMultipleChoiceRepository.findById(multipleChoiceIds.get((int) indiceSorteado)).get();

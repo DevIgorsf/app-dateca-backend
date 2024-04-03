@@ -35,6 +35,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
                 .requestMatchers(HttpMethod.DELETE, "/professor/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/materia/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/questao/**").hasAnyAuthority("ADMIN", "PROFESSOR")
+                .requestMatchers(HttpMethod.DELETE, "/enade/**").hasAnyAuthority("ADMIN", "PROFESSOR")
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated()
                 .and().addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

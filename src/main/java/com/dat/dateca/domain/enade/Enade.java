@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Year;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,7 +18,7 @@ public class Enade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Year ano;
+    private Integer year;
 
     private Integer number;
 
@@ -40,8 +41,11 @@ public class Enade {
 
     private String alternativeE;
 
+    @OneToMany(mappedBy = "enade", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImageEnade> images;
+
     public Enade(EnadeForm enadeForm) {
-        this.ano = enadeForm.ano();
+        this.year = enadeForm.year();
         this.number = enadeForm.number();
         this.statement = enadeForm.statement();
         this.pointsEnum = enadeForm.pointsEnum();
@@ -53,8 +57,8 @@ public class Enade {
         this.alternativeE = enadeForm.alternativeE();
     }
 
-    public Enade(Year ano, int number, String statement, PointsEnum pointsEnum, Character correctAnswer, String alternativeA, String alternativeB, String alternativeC, String alternativeD, String alternativeE) {
-        this.ano = ano;
+    public Enade(int year, int number, String statement, PointsEnum pointsEnum, Character correctAnswer, String alternativeA, String alternativeB, String alternativeC, String alternativeD, String alternativeE) {
+        this.year = year;
         this.number = number;
         this.statement = statement;
         this.pointsEnum = pointsEnum;
@@ -67,7 +71,7 @@ public class Enade {
     }
 
     public void updateEnade(EnadeForm enadeForm) {
-        this.ano = enadeForm.ano();
+        this.year = enadeForm.year();
         this.number = enadeForm.number();
         this.statement = enadeForm.statement();
         this.pointsEnum = enadeForm.pointsEnum();

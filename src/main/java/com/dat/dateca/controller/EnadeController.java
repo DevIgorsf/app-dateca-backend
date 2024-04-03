@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Year;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +42,10 @@ public class EnadeController {
 //        return ResponseEntity.ok().body(enadeService.getAllEnade());
 //    }
 //
-//    @GetMapping
-//    public ResponseEntity<List<EnadeAllDTO>> getAllEnadeWithoutImages() {
-//        return ResponseEntity.ok().body(enadeService.getAllEnadeWithoutImages());
-//    }
+    @GetMapping
+    public ResponseEntity<List<EnadeDTO>> getAllEnadeWithoutImages() {
+        return ResponseEntity.ok().body(enadeService.getAllEnadeWithoutImages());
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<EnadeDTO> getEnade(@PathVariable Long id) {
@@ -79,9 +77,9 @@ public class EnadeController {
     }
 
     @PostMapping("/imagens")
-    public ResponseEntity<Enade> salvar(
+    public ResponseEntity<EnadeDTO> salvar(
             @RequestParam("imageFile") MultipartFile[] files,
-            @RequestParam("ano") Year ano,
+            @RequestParam("year") int year,
             @RequestParam("number") int number,
             @RequestParam("statement") String statement,
             @RequestParam("pointsEnum") String pointsEnum,
@@ -93,18 +91,22 @@ public class EnadeController {
             @RequestParam("alternativeE") String alternativeE) {
 
 
-        return ResponseEntity.ok(enadeService.salvarImagens(
-                files,
-                ano,
-                number,
-                statement,
-                pointsEnum,
-                correctAnswer,
-                alternativeA,
-                alternativeB,
-                alternativeC,
-                alternativeD,
-                alternativeE));
+        try {
+            return ResponseEntity.ok(enadeService.salvarImagens(
+                    files,
+                    year,
+                    number,
+                    statement,
+                    pointsEnum,
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @GetMapping("/imagens/{id}")

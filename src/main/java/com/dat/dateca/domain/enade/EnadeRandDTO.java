@@ -5,8 +5,7 @@ import java.util.List;
 
 public record EnadeRandDTO(
         Long id,
-//        List<Long> idImages,
-        Year ano,
+        Integer year,
         Integer number,
         String statement,
         String alternativeA,
@@ -18,8 +17,7 @@ public record EnadeRandDTO(
     public EnadeRandDTO(Enade enade) {
         this(
                 enade.getId(),
-//                enade.getIdImages(),
-                enade.getAno(),
+                enade.getYear(),
                 enade.getNumber(),
                 enade.getStatement(),
                 enade.getAlternativeA(),
