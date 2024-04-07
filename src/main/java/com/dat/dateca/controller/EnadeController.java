@@ -2,6 +2,7 @@ package com.dat.dateca.controller;
 
 import com.dat.dateca.domain.enade.*;
 import com.dat.dateca.domain.question.QuestionAnswerDTO;
+import com.dat.dateca.domain.question.QuestionMultipleAllDTO;
 import com.dat.dateca.domain.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -112,5 +113,10 @@ public class EnadeController {
     @GetMapping("/imagens/{id}")
     public ResponseEntity<List<ImageEnade>> getImages(@PathVariable Long id) {
         return ResponseEntity.ok(enadeService.getImages(id));
+    }
+
+    @GetMapping("/images")
+    public ResponseEntity<List<EnadeAllDTO>> getAllEnade() {
+        return ResponseEntity.ok().body(enadeService.getAllEnade());
     }
 }

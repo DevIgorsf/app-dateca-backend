@@ -165,4 +165,14 @@ public class EnadeService {
 
         return enadeList;
     }
+
+    public List<EnadeAllDTO> getAllEnade() {
+        List<EnadeAllDTO> enadeList = enadeRepository.findAllEnadeWithImage();
+
+        if(enadeList.isEmpty()) {
+            throw new EntityNotFoundException("Não há questões cadastradas");
+        }
+
+        return enadeList;
+    }
 }

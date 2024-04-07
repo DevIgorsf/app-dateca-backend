@@ -16,5 +16,8 @@ public interface EnadeRepository extends JpaRepository<Enade, Long> {
     List<Long> findIdsOfEnade();
 
     @Query("SELECT q FROM Enade q WHERE q.id IN :ids ORDER BY RAND() LIMIT 1")
-    Optional<QuestionMultipleChoice> findRandomEnadeByIds(@Param("ids") List<Long> ids);
+    Optional<EnadeDTO> findRandomEnadeByIds(@Param("ids") List<Long> ids);
+
+    @Query("SELECT q FROM Enade q JOIN q.images i")
+    List<EnadeAllDTO> findAllEnadeWithImage();
 }
