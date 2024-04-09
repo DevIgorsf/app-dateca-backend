@@ -111,7 +111,7 @@ public class EnadeController {
     }
 
     @GetMapping("/imagens/{id}")
-    public ResponseEntity<Enade> getImages(@PathVariable Long id) {
+    public ResponseEntity<EnadeWithImageDTO> getImages(@PathVariable Long id) {
         return ResponseEntity.ok(enadeService.getImages(id));
     }
 

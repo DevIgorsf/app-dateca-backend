@@ -41,7 +41,7 @@ public class Enade {
 
     private String alternativeE;
 
-    @OneToMany(mappedBy = "enade", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "enade", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ImageEnade> images;
 
     public Enade(EnadeForm enadeForm) {

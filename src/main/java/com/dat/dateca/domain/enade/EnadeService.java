@@ -150,9 +150,11 @@ public class EnadeService {
         return new EnadeDTO(enade);
     }
 
-    public Enade getImages(Long id) {
+    public EnadeWithImageDTO getImages(Long id) {
         Enade enade = enadeRepository.findById(id).get();
-        return enade;
+
+        EnadeWithImageDTO enadeWithImageDTO = new EnadeWithImageDTO(enade);
+        return enadeWithImageDTO;
     }
 
     public List<EnadeDTO> getAllEnadeWithoutImages() {
