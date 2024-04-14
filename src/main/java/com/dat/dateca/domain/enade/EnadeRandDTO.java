@@ -12,7 +12,8 @@ public record EnadeRandDTO(
         String alternativeB,
         String alternativeC,
         String alternativeD,
-        String alternativeE
+        String alternativeE,
+        List<ImageEnadeDTO> images
 ) {
     public EnadeRandDTO(Enade enade) {
         this(
@@ -24,7 +25,8 @@ public record EnadeRandDTO(
                 enade.getAlternativeB(),
                 enade.getAlternativeC(),
                 enade.getAlternativeD(),
-                enade.getAlternativeE()
+                enade.getAlternativeE(),
+                enade.getImages().stream().map(ImageEnadeDTO::new).toList()
         );
     }
 }

@@ -41,12 +41,12 @@ public class QuestionService {
     @Autowired
     private ImageQuestionRepository imageQuestionRepository;
 
-    public QuestionMultipleChoice createQuestion(QuestionForm questionForm, String registrationNumber) {
+    public QuestionMultipleDTO createQuestion(QuestionForm questionForm, String registrationNumber) {
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
         Course course = courseRepository.findById(questionForm.course()).get();
         QuestionMultipleChoice question = new QuestionMultipleChoice(questionForm, professor, course);
         questionMultipleChoiceRepository.save(question);
-        return question;
+        return new QuestionMultipleDTO(question);
     }
 
     @GetMapping

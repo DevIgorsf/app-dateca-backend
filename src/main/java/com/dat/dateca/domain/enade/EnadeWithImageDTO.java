@@ -1,6 +1,5 @@
 package com.dat.dateca.domain.enade;
 
-import com.dat.dateca.domain.question.PointsEnum;
 import jakarta.annotation.Nullable;
 
 import java.util.List;

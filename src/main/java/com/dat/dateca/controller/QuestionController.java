@@ -26,15 +26,10 @@ public class QuestionController {
     private ImageQuestionRepository imageQuestionRepository;
 
     @PostMapping
-    public ResponseEntity<QuestionMultipleChoice> createQuestion(@RequestBody @Valid QuestionForm questionForm) {
-        try {
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            String registrationNumber = ((User)principal).getLogin();
-            return ResponseEntity.status(HttpStatus.CREATED).body(questionService.createQuestion(questionForm, registrationNumber));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<QuestionMultipleDTO> createQuestion(@RequestBody @Valid QuestionForm questionForm) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String registrationNumber = ((User)principal).getLogin();
+        return ResponseEntity.status(HttpStatus.CREATED).body(questionService.createQuestion(questionForm, registrationNumber));
     }
 
     @PutMapping("/{id}")
