@@ -1,11 +1,10 @@
-HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-!**/src/main/resources/
-src/main/resources/**
+# Arquivos e diretórios a serem ignorados pelo Git
 
+# Diretórios gerados pelo Maven ou Gradle
+target/
+build/
+
+# Arquivos e diretórios específicos de IDEs
 ### STS ###
 .apt_generated
 .classpath
@@ -16,7 +15,7 @@ src/main/resources/**
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -27,9 +26,11 @@ src/main/resources/**
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
+# Outros arquivos e diretórios que você deseja ignorar
+HELP.md
+src/main/resources/
+
