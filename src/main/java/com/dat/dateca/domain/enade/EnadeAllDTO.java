@@ -9,7 +9,7 @@ public record EnadeAllDTO(
         Integer year,
         Integer number,
         String statement,
-        PointsEnum pointsEnum
+        String pointsEnum
 ) {
     public EnadeAllDTO(Enade enade) {
         this(
@@ -17,7 +17,7 @@ public record EnadeAllDTO(
                 enade.getYear(),
                 enade.getNumber(),
                 enade.getStatement(),
-                enade.getPointsEnum()
+                enade.getPointsEnum().getDescription()
         );
     }
 }

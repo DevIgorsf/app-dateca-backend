@@ -3,7 +3,7 @@ package com.dat.dateca.domain.question;
 public record QuestionMultipleAllDTO(
     Long id,
     String statement,
-    PointsEnum pointsEnum,
+    String pointsEnum,
     QuestionTypeEnum questionTypeEnum,
     String course
 
@@ -12,7 +12,7 @@ public record QuestionMultipleAllDTO(
         this(
                 questionMultipleChoice.getId(),
                 questionMultipleChoice.getStatement(),
-                questionMultipleChoice.getPointsEnum(),
+                questionMultipleChoice.getPointsEnum().getDescription(),
                 questionMultipleChoice.getQuestionTypeEnum(),
                 questionMultipleChoice.getCourse().getName()
         );
