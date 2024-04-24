@@ -7,6 +7,7 @@ RUN mvn -X -f /home/app/pom.xml clean package
 
 # Copia o arquivo JAR construído pela aplicação
 FROM openjdk:17-jdk-alpine
+WORKDIR /app
 COPY target/dateca-0.0.2.jar /app/dateca.jar
 # Expõe a porta 8080 (a porta padrão do Spring Boot)
 EXPOSE 8080
