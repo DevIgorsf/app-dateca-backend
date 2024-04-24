@@ -1,14 +1,15 @@
-# Usa uma imagem base com o Java 17
-FROM openjdk:17-jdk-alpine
+#
+# Build stage
+#
+FROM maven:3.8.1-openjdk-17 AS build
+COPY src /home/app/src
+COPY pom.xml /home/app
+RUN mvn -f /home/app/pom.xml clean package
 
-# Define o diretório de trabalho dentro do contêiner
-WORKDIR /app
-
-# Copia o arquivo JAR construído pela aplicação
-COPY target/dateca-0.0.2.jar /app/dateca.jar
-
-# Expõe a porta 8080 (a porta padrão do Spring Boot)
+#
+# Package stage
+#
+FROM openjdk:17
+COPY --from=build /home/app/target/dateca-0.0.2.jar /usr/local/lib/demo.jar
 EXPOSE 8080
-
-# Comando para executar a aplicação Spring Boot quando o contêiner for iniciado
-CMD ["java", "-jar", "dateca-0.0.2.jar"]
+ENTRYPOINT ["java","-jar","/usr/local/lib/demo.jar"]
