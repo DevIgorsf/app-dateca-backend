@@ -11,4 +11,4 @@ COPY target/dateca-0.0.2.jar /app/dateca.jar
 EXPOSE 8080
 
 # Comando para executar a aplicação Spring Boot quando o contêiner for iniciado
-CMD ["java", "-jar", "dateca.jar"]
+CMD ["java", "-jar", "dateca-0.0.2.jar"]
