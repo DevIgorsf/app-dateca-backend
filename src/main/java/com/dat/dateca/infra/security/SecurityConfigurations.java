@@ -29,11 +29,10 @@ public class SecurityConfigurations implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.cors().disable()
+        return http.cors().and()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeHttpRequests()
-                .requestMatchers(HttpMethod.OPTIONS, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/aluno/cadastrar").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/professor/**").hasAuthority("ADMIN")
@@ -54,15 +53,15 @@ public class SecurityConfigurations implements WebMvcConfigurer {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        var configs = new CorsConfiguration();
-        configs.addAllowedHeader("*");
-        configs.addAllowedMethod("*");
-        configs.addAllowedOrigin("*");
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.applyPermitDefaultValues();
+        corsConfiguration.addAllowedMethod(HttpMethod.PUT);
+        corsConfiguration.addAllowedMethod(HttpMethod.DELETE);
 
-        var url = new UrlBasedCorsConfigurationSource();
-        url.registerCorsConfiguration("/**", configs);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
 
-        return url;
+        return source;
     }
 
     @Bean
@@ -70,12 +69,12 @@ public class SecurityConfigurations implements WebMvcConfigurer {
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
-    }
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOrigins("*")
+//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
+//    }
 
     //Configuracoes de recursos estaticos(js, css, imagens, etc.)
     @Bean
