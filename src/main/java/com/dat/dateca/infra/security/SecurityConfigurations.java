@@ -52,20 +52,18 @@ public class SecurityConfigurations implements WebMvcConfigurer {
         return configuration.getAuthenticationManager();
     }
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        var configs = new CorsConfiguration();
-//        configs.addAllowedHeader("*");
-//        configs.addAllowedMethod("*");
-//
-//        // url do frontend aqui:
-//        configs.addAllowedOrigin("*");
-//
-//        var url = new UrlBasedCorsConfigurationSource();
-//        url.registerCorsConfiguration("/**", configs);
-//
-//        return url;
-//    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var configs = new CorsConfiguration();
+        configs.addAllowedHeader("*");
+        configs.addAllowedMethod("*");
+        configs.addAllowedOrigin("*");
+
+        var url = new UrlBasedCorsConfigurationSource();
+        url.registerCorsConfiguration("/**", configs);
+
+        return url;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
