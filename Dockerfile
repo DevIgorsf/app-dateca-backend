@@ -1,21 +1,13 @@
-FROM eclipse-temurin:17-jdk-alpine as builder
-WORKDIR application
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-COPY src src
-RUN ./mvnw package -DskipTests
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} application.jar
-RUN java -Djarmode=layertools -jar application.jar extract
+FROM maven:3.8.1-openjdk-17 AS build
 
+COPY src /home/app/src
+COPY pom.xml /home/app
+RUN mvn -X -f /home/app/pom.xml clean package
 
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR application
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/application/ ./
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+FROM openjdk:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /home/app/target/dateca-0.0.2.jar /app/dateca.jar
+EXPOSE 8080
+CMD ["java", "-jar", "dateca.jar"]
 
 
