@@ -52,26 +52,34 @@ public class SecurityConfigurations implements WebMvcConfigurer {
         return configuration.getAuthenticationManager();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        var configs = new CorsConfiguration();
-        configs.addAllowedHeader("*");
-        configs.addAllowedMethod("*");
-
-        // url do frontend aqui:
-        configs.addAllowedOrigin("*");
-
-        var url = new UrlBasedCorsConfigurationSource();
-        url.registerCorsConfiguration("/**", configs);
-
-        return url;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        var configs = new CorsConfiguration();
+//        configs.addAllowedHeader("*");
+//        configs.addAllowedMethod("*");
+//
+//        // url do frontend aqui:
+//        configs.addAllowedOrigin("*");
+//
+//        var url = new UrlBasedCorsConfigurationSource();
+//        url.registerCorsConfiguration("/**", configs);
+//
+//        return url;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT");
+    }
+
+    //Configuracoes de recursos estaticos(js, css, imagens, etc.)
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers("/**.html", "/v2/api-docs", "/webjars/**", "/configuration/**", "/swagger-resources/**");
