@@ -26,6 +26,8 @@ services:
       - "80:80"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - /etc/letsencrypt/live/dateca.com.br/fullchain.pem:/etc/letsencrypt/live/dateca.com.br/fullchain.pem
+      - /etc/letsencrypt/live/dateca.com.br/privkey.pem:/etc/letsencrypt/live/dateca.com.br/privkey.pem
     restart: unless-stopped
     depends_on:
       - app
