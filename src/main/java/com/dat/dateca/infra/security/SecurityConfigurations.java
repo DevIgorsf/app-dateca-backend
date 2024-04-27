@@ -29,7 +29,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.cors().and()
+        return http.cors().disable()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeHttpRequests()
@@ -51,18 +51,18 @@ public class SecurityConfigurations implements WebMvcConfigurer {
         return configuration.getAuthenticationManager();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.applyPermitDefaultValues();
-        corsConfiguration.addAllowedMethod(HttpMethod.PUT);
-        corsConfiguration.addAllowedMethod(HttpMethod.DELETE);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration corsConfiguration = new CorsConfiguration();
+//        corsConfiguration.applyPermitDefaultValues();
+//        corsConfiguration.addAllowedMethod(HttpMethod.PUT);
+//        corsConfiguration.addAllowedMethod(HttpMethod.DELETE);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", corsConfiguration);
+//
+//        return source;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
