@@ -27,45 +27,38 @@ public class ProfessorController {
     private StudentService studentService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Transactional
     public ResponseEntity<ProfessorDTO> createProfessor(@RequestBody @Valid ProfessorCreate professorCreate) {
         return ResponseEntity.status(HttpStatus.CREATED).body(professorService.createProfessor(professorCreate));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<ProfessorDTO> getProfessor(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessor(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<ProfessorDTO> updateProfessor(@PathVariable Long id, @RequestBody @Valid ProfessorUpdate professorUpdate) {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.updateProfessor(id, professorUpdate));
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<List<ProfessorDTO>> getAll() {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.getAllProfessors());
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @Transactional
     public ResponseEntity<String> deleteProfessor(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.deleteProfessor(id));
     }
 
     @GetMapping("/dados")
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<Long> getProfessorData() {
         return ResponseEntity.status(HttpStatus.OK).body(professorService.getProfessorData());
     }
 
     @GetMapping("/perfil")
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<ProfessorDTO> getProfile() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String registrationNumber = ((User)principal).getLogin();
@@ -73,13 +66,11 @@ public class ProfessorController {
     }
 
     @GetMapping("/ranking")
-    @PreAuthorize("hasAuthority('ADMIN', 'PROFESSOR')")
     public ResponseEntity<List<StudentWithIndex>> getRanking() {
         return ResponseEntity.status(HttpStatus.OK).body(studentService.rankingAll());
     }
 
     @PostMapping("/updatePassword")
-    @PreAuthorize("hasAuthority('PROFESSOR')")
     @Transactional
     public ResponseEntity<?> updatePassword(HttpServletRequest request, @RequestBody @Valid String newPassword) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

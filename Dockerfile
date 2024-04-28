@@ -7,7 +7,7 @@ RUN mvn -f /home/app/pom.xml clean package
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
 COPY --from=build /home/app/target/dateca-0.0.2.jar /app/dateca.jar
-EXPOSE 80
+EXPOSE 8080
 CMD ["java", "-jar", "/app/dateca.jar"]
 
 
