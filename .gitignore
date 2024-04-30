@@ -3,7 +3,6 @@
 # Diretórios gerados pelo Maven ou Gradle
 target/
 build/
-.env
 mysql-data
 
 

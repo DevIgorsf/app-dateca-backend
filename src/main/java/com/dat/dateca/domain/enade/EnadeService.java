@@ -157,9 +157,8 @@ public class EnadeService {
         return enadeWithImageDTO;
     }
 
-    public List<EnadeDTO> getAllEnadeWithoutImages() {
-        List<EnadeDTO> enadeList = enadeRepository.findAll()
-                .stream().map(EnadeDTO::new).toList();
+    public List<EnadeAllDTO> getAllEnadeWithoutImages() {
+        List<EnadeAllDTO> enadeList = enadeRepository.findAllEnadeWithoutImage();
 
         if(enadeList.isEmpty()) {
             throw new EntityNotFoundException("Não há questões cadastradas");
@@ -168,7 +167,7 @@ public class EnadeService {
         return enadeList;
     }
 
-    public List<EnadeAllDTO> getAllEnade() {
+    public List<EnadeAllDTO> getAllEnadeWithImages() {
         List<EnadeAllDTO> enadeList = enadeRepository.findAllEnadeWithImage();
 
         if(enadeList.isEmpty()) {
