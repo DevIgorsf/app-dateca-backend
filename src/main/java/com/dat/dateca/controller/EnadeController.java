@@ -44,7 +44,7 @@ public class EnadeController {
 //    }
 //
     @GetMapping
-    public ResponseEntity<List<EnadeDTO>> getAllEnadeWithoutImages() {
+    public ResponseEntity<List<EnadeAllDTO>> getAllEnadeWithoutImages() {
         return ResponseEntity.ok().body(enadeService.getAllEnadeWithoutImages());
     }
 
@@ -117,6 +117,6 @@ public class EnadeController {
 
     @GetMapping("/images")
     public ResponseEntity<List<EnadeAllDTO>> getAllEnade() {
-        return ResponseEntity.ok().body(enadeService.getAllEnade());
+        return ResponseEntity.ok().body(enadeService.getAllEnadeWithImages());
     }
 }
