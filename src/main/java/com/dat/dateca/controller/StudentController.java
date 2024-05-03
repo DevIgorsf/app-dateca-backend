@@ -57,4 +57,8 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.updatePerfil(registrationNumber, studentCadastro));
     }
 
+    @GetMapping("/dados")
+    public ResponseEntity<Long> getStudentData() {
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getStudentData());
+    }
 }
