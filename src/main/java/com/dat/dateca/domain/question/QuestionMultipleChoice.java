@@ -44,9 +44,8 @@ public class QuestionMultipleChoice extends Question {
         this.alternativeE = questionForm.alternativeE();
     }
 
-    public QuestionMultipleChoice(String statement, List<Long> imagensSalvas, PointsEnum pointsEnum, Course course, Professor professor, Character correctAnswer, String alternativeA, String alternativeB, String alternativeC, String alternativeD, String alternativeE) {
+    public QuestionMultipleChoice(String statement, PointsEnum pointsEnum, Course course, Professor professor, Character correctAnswer, String alternativeA, String alternativeB, String alternativeC, String alternativeD, String alternativeE) {
         super(statement, pointsEnum, QuestionTypeEnum.MULTIPLE_CHOICE, course, professor);
-        this.idImages = imagensSalvas;
         this.correctAnswer = correctAnswer;
         this.alternativeA = alternativeA;
         this.alternativeB = alternativeB;

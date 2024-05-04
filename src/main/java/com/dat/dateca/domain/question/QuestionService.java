@@ -2,6 +2,7 @@ package com.dat.dateca.domain.question;
 
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseRepository;
+import com.dat.dateca.domain.enade.ImageEnade;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorRepository;
 import com.dat.dateca.domain.student.Student;
@@ -157,23 +158,10 @@ public class QuestionService {
             String alternativeD,
             String alternativeE) throws IOException {
 
-        List<ImageQuestion> imagensSalvas = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            ImageQuestion imagem = new ImageQuestion();
-            imagem.setNome(file.getOriginalFilename());
-            imagem.setImagem(file.getBytes());
-
-            imagensSalvas.add(imagem);
-        }
-
-        imageQuestionRepository.saveAll(imagensSalvas);
-
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
         Course courseSaved = courseRepository.findById(course).get();
 
         var questionMultipleChoice = new QuestionMultipleChoice(statement,
-                imagensSalvas.stream().map(ImageQuestion::getId).collect(Collectors.toList()),
                 PointsEnum.fromString(pointsEnum),
                 courseSaved,
                 professor,
@@ -185,6 +173,19 @@ public class QuestionService {
                 alternativeE);
 
         questionMultipleChoiceRepository.save(questionMultipleChoice);
+
+        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            ImageQuestion imagem = new ImageQuestion();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setQuestion(questionMultipleChoice);
+
+            imagensSalvas.add(imagem);
+        }
+
+        imageQuestionRepository.saveAll(imagensSalvas);
 
         return questionMultipleChoice;
     }
