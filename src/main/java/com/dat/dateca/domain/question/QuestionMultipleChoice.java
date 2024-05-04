@@ -16,10 +16,6 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name="id")
 public class QuestionMultipleChoice extends Question {
 
-    @ElementCollection
-    @Column(name = "image_id")
-    private List<Long> idImages;
-
     private Character correctAnswer;
     @Lob
     @Column(columnDefinition = "TEXT")

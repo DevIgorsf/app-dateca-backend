@@ -29,12 +29,12 @@ public class EnadeController {
     private ImageEnadeRepository imageEnadeRepository;
 
     @PostMapping
-    public ResponseEntity<EnadeDTO> createEnade(@RequestBody @Valid EnadeForm enadeForm) {
+    public ResponseEntity<EnadeAllDTO> createEnade(@RequestBody @Valid EnadeForm enadeForm) {
         return ResponseEntity.status(HttpStatus.CREATED).body(enadeService.createEnade(enadeForm));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EnadeDTO> updateEnade(@PathVariable Long id, @RequestBody @Valid EnadeForm EnadeForm) {
+    public ResponseEntity<EnadeAllDTO> updateEnade(@PathVariable Long id, @RequestBody @Valid EnadeForm EnadeForm) {
         return ResponseEntity.status(HttpStatus.OK).body(enadeService.updateEnade(id, EnadeForm));
     }
 
@@ -78,7 +78,7 @@ public class EnadeController {
     }
 
     @PostMapping("/imagens")
-    public ResponseEntity<EnadeDTO> salvar(
+    public ResponseEntity<EnadeAllDTO> salvar(
             @RequestParam("imageFile") MultipartFile[] files,
             @RequestParam("year") int year,
             @RequestParam("number") int number,
@@ -105,6 +105,41 @@ public class EnadeController {
                     alternativeC,
                     alternativeD,
                     alternativeE));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PutMapping("/imagens/{id}")
+    public ResponseEntity<EnadeAllDTO> updated(
+            @RequestParam("imageFile") MultipartFile[] files,
+            @RequestParam("year") int year,
+            @RequestParam("number") int number,
+            @RequestParam("statement") String statement,
+            @RequestParam("pointsEnum") String pointsEnum,
+            @RequestParam("correctAnswer") Character correctAnswer,
+            @RequestParam("alternativeA") String alternativeA,
+            @RequestParam("alternativeB") String alternativeB,
+            @RequestParam("alternativeC") String alternativeC,
+            @RequestParam("alternativeD") String alternativeD,
+            @RequestParam("alternativeE") String alternativeE,
+            @PathVariable Long id) {
+
+
+        try {
+            return ResponseEntity.ok(enadeService.updateImagens(
+                    files,
+                    year,
+                    number,
+                    statement,
+                    pointsEnum,
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE,
+                    id));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

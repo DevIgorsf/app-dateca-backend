@@ -1,5 +1,6 @@
 package com.dat.dateca.domain.question;
 
+import com.dat.dateca.domain.enade.Enade;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,4 +22,8 @@ public class ImageQuestion {
     @Lob
     @Column(name = "imagem", nullable = false, columnDefinition = "LONGBLOB")
     private byte[] imagem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id")
+    private Question question;
 }
