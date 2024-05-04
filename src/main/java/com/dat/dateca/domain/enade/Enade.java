@@ -43,6 +43,9 @@ public class Enade {
     @OneToMany(mappedBy = "enade", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ImageEnade> images;
 
+    @OneToMany(mappedBy = "enade", cascade = CascadeType.ALL)
+    private List<EnadeAnswerResult> answerResults;
+
     public Enade(EnadeForm enadeForm) {
         this.year = enadeForm.year();
         this.number = enadeForm.number();

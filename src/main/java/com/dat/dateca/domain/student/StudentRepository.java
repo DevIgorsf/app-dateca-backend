@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface StudentRepository extends JpaRepository<Student, UUID> {
 
+    long count();
+
     Student findByRegistrationNumber(String registrationNumber);
 
     List<Student> findAllByOrderByPointsDesc();

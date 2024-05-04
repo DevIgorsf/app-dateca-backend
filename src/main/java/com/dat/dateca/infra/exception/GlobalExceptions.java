@@ -15,6 +15,11 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptions {
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro interno no servidor.");
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<StandardError> entityNotFoundHandlerMethod(EntityNotFoundException e, HttpServletRequest request) {
         StandardError se = new StandardError(LocalDateTime.now(), 404, "Not Found", e.getMessage(), request.getRequestURI());
@@ -27,4 +32,9 @@ public class GlobalExceptions {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<StandardError> nullPointerException(NullPointerException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), "Ocorreu uma NullPointerException", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(se);
+    }
 }

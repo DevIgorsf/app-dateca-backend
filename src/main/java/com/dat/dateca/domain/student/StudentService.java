@@ -81,4 +81,8 @@ public class StudentService {
 
         return new StudentDTO(student);
     }
+
+    public Long getStudentData() {
+        return studentRepository.count();
+    }
 }
