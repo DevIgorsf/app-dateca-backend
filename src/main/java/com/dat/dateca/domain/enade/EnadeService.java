@@ -24,6 +24,9 @@ public class EnadeService {
     private ImageEnadeRepository imageEnadeRepository;
 
     @Autowired
+    private EnadeAnswerResultRepository enadeAnswerResultRepository;
+
+    @Autowired
     private StudentRepository studentRepository;
 
     public EnadeDTO createEnade(EnadeForm enadeForm) {
@@ -95,10 +98,16 @@ public class EnadeService {
 
         int result =  Character.compare(enade.getCorrectAnswer(), correctAnswerChar);
         if(result == 0) {
+            EnadeAnswerResult enadeAnswerResult = new EnadeAnswerResult(enade, true);
+            enadeAnswerResultRepository.save(enadeAnswerResult);
+
             stundent.addPontuacao(enade.getPointsEnum().getKey());
             studentRepository.save(stundent);
             return new QuestionAnswerDTO(enade.getCorrectAnswer(), correctAnswerChar, true);
         }
+
+        EnadeAnswerResult enadeAnswerResult = new EnadeAnswerResult(enade, false);
+        enadeAnswerResultRepository.save(enadeAnswerResult);
 
         return new QuestionAnswerDTO(enade.getCorrectAnswer(), correctAnswerChar, false);
     }
