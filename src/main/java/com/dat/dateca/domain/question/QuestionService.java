@@ -52,8 +52,7 @@ public class QuestionService {
 
     @GetMapping
     public List<QuestionMultipleAllDTO> getAllQuestion() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findByidImagesIsNotEmpty()
-                .stream().map(QuestionMultipleAllDTO::new).toList();
+        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAllQuestionWithImage();
 
         if(questionList.isEmpty()) {
             throw new EntityNotFoundException("Não há questões cadastradas");
@@ -64,8 +63,7 @@ public class QuestionService {
 
     @GetMapping
     public List<QuestionMultipleAllDTO> getAllQuestionWithoutImages() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findByidImagesIsEmpty()
-                .stream().map(QuestionMultipleAllDTO::new).toList();
+        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAllQuestionWithoutImage();
 
         if(questionList.isEmpty()) {
             throw new EntityNotFoundException("Não há questões cadastradas");

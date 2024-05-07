@@ -4,7 +4,6 @@ public record QuestionMultipleAllDTO(
     Long id,
     String statement,
     String pointsEnum,
-    QuestionTypeEnum questionTypeEnum,
     String course
 
 ) {
@@ -13,7 +12,6 @@ public record QuestionMultipleAllDTO(
                 questionMultipleChoice.getId(),
                 questionMultipleChoice.getStatement(),
                 questionMultipleChoice.getPointsEnum().getDescription(),
-                questionMultipleChoice.getQuestionTypeEnum(),
                 questionMultipleChoice.getCourse().getName()
         );
     }

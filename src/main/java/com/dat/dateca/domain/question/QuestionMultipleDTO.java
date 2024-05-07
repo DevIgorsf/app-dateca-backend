@@ -8,7 +8,6 @@ import java.util.List;
 public record QuestionMultipleDTO(
         Long id,
 
-        List<Long> idImages,
         String statement,
         String pointsEnum,
         CourseDTO course,
@@ -22,7 +21,6 @@ public record QuestionMultipleDTO(
     public QuestionMultipleDTO(QuestionMultipleChoice questionMultipleChoice) {
         this(
                 questionMultipleChoice.getId(),
-                questionMultipleChoice.getIdImages(),
                 questionMultipleChoice.getStatement(),
                 questionMultipleChoice.getPointsEnum().getDescription(),
                 questionMultipleChoice.getCourseDTO(),
