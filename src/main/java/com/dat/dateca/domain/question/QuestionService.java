@@ -187,4 +187,49 @@ public class QuestionService {
 
         return questionMultipleChoice;
     }
+
+    public QuestionMultipleAllDTO updateImagens(
+            String registrationNumber,
+            MultipartFile[] files,
+            String statement,
+            String pointsEnum,
+            Long course,
+            Character correctAnswer,
+            String alternativeA,
+            String alternativeB,
+            String alternativeC,
+            String alternativeD,
+            String alternativeE) throws IOException {
+
+        Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
+        Course courseSaved = courseRepository.findById(course).get();
+
+        var questionMultipleChoice = new QuestionMultipleChoice(statement,
+                PointsEnum.fromString(pointsEnum),
+                courseSaved,
+                professor,
+                correctAnswer,
+                alternativeA,
+                alternativeB,
+                alternativeC,
+                alternativeD,
+                alternativeE);
+
+        questionMultipleChoiceRepository.save(questionMultipleChoice);
+
+        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            ImageQuestion imagem = new ImageQuestion();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setQuestion(questionMultipleChoice);
+
+            imagensSalvas.add(imagem);
+        }
+
+        imageQuestionRepository.saveAll(imagensSalvas);
+
+        return new QuestionMultipleAllDTO(questionMultipleChoice);
+    }
 }

@@ -111,6 +111,41 @@ public class QuestionController {
         }
     }
 
+    @PutMapping("/imagens")
+    public ResponseEntity<QuestionMultipleAllDTO> updated(
+            @RequestParam("imageFile") MultipartFile[] files,
+            @RequestParam("statement") String statement,
+            @RequestParam("pointsEnum") String pointsEnum,
+            @RequestParam("course") Long course,
+            @RequestParam("correctAnswer") Character correctAnswer,
+            @RequestParam("alternativeA") String alternativeA,
+            @RequestParam("alternativeB") String alternativeB,
+            @RequestParam("alternativeC") String alternativeC,
+            @RequestParam("alternativeD") String alternativeD,
+            @RequestParam("alternativeE") String alternativeE) {
+        try {
+
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String registrationNumber = ((User)principal).getLogin();
+
+            return ResponseEntity.ok(questionService.updateImagens(
+                    registrationNumber,
+                    files,
+                    statement,
+                    pointsEnum,
+                    course,
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/imagens/{idImages}")
     public ImageQuestion getImagens(@PathVariable String idImages) {
         return imageQuestionRepository.findById(Long.valueOf(idImages)).get();
