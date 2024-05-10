@@ -37,14 +37,9 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.OK).body(questionService.updateQuestion(id, questionForm));
     }
 
-    @GetMapping("/images")
+    @GetMapping
     public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestion() {
         return ResponseEntity.ok().body(questionService.getAllQuestion());
-    }
-
-    @GetMapping
-    public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestionWithoutImages() {
-        return ResponseEntity.ok().body(questionService.getAllQuestionWithoutImages());
     }
 
     @GetMapping("/{id}")
@@ -144,10 +139,5 @@ public class QuestionController {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    @GetMapping("/imagens/{idImages}")
-    public ImageQuestion getImagens(@PathVariable String idImages) {
-        return imageQuestionRepository.findById(Long.valueOf(idImages)).get();
     }
 }

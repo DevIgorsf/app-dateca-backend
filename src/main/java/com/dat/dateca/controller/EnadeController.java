@@ -38,19 +38,9 @@ public class EnadeController {
         return ResponseEntity.status(HttpStatus.OK).body(enadeService.updateEnade(id, EnadeForm));
     }
 
-//    @GetMapping("/images")
-//    public ResponseEntity<List<EnadeAllDTO>> getAllEnade() {
-//        return ResponseEntity.ok().body(enadeService.getAllEnade());
-//    }
-//
     @GetMapping
     public ResponseEntity<List<EnadeAllDTO>> getAllEnadeWithoutImages() {
         return ResponseEntity.ok().body(enadeService.getAllEnadeWithoutImages());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<EnadeDTO> getEnade(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(enadeService.getEnade(id));
     }
 
     @GetMapping("/aluno")
@@ -145,12 +135,12 @@ public class EnadeController {
         }
     }
 
-    @GetMapping("/imagens/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<EnadeWithImageDTO> getImages(@PathVariable Long id) {
         return ResponseEntity.ok(enadeService.getImages(id));
     }
 
-    @GetMapping("/images")
+    @GetMapping
     public ResponseEntity<List<EnadeAllDTO>> getAllEnade() {
         return ResponseEntity.ok().body(enadeService.getAllEnadeWithImages());
     }
