@@ -38,11 +38,6 @@ public class EnadeController {
         return ResponseEntity.status(HttpStatus.OK).body(enadeService.updateEnade(id, EnadeForm));
     }
 
-    @GetMapping
-    public ResponseEntity<List<EnadeAllDTO>> getAllEnadeWithoutImages() {
-        return ResponseEntity.ok().body(enadeService.getAllEnadeWithoutImages());
-    }
-
     @GetMapping("/aluno")
     public ResponseEntity<EnadeRandDTO> getEnadeAleatoria() {
         return ResponseEntity.status(HttpStatus.OK).body(enadeService.getEnadeAleatoria());
