@@ -17,10 +17,4 @@ public interface QuestionMultipleChoiceRepository extends JpaRepository<Question
     List<Long> findIdsOfMultipleChoiceQuestions();
     @Query("SELECT q FROM QuestionMultipleChoice q WHERE q.id IN :ids ORDER BY RAND() LIMIT 1")
     Optional<QuestionMultipleChoice> findRandomQuestionByIds(@Param("ids") List<Long> ids);
-
-    @Query("SELECT q FROM Enade q LEFT JOIN q.images i WHERE i IS NULL")
-    List<QuestionMultipleAllDTO> findAllQuestionWithoutImage();
-
-    @Query("SELECT q FROM Enade q JOIN q.images i")
-    List<QuestionMultipleAllDTO> findAllQuestionWithImage();
 }

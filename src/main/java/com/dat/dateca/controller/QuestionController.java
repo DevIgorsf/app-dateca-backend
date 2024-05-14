@@ -106,7 +106,7 @@ public class QuestionController {
         }
     }
 
-    @PutMapping("/imagens")
+    @PutMapping("/imagens/{id}")
     public ResponseEntity<QuestionMultipleAllDTO> updated(
             @RequestParam("imageFile") MultipartFile[] files,
             @RequestParam("statement") String statement,
@@ -117,14 +117,11 @@ public class QuestionController {
             @RequestParam("alternativeB") String alternativeB,
             @RequestParam("alternativeC") String alternativeC,
             @RequestParam("alternativeD") String alternativeD,
-            @RequestParam("alternativeE") String alternativeE) {
+            @RequestParam("alternativeE") String alternativeE,
+            long id) {
         try {
 
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            String registrationNumber = ((User)principal).getLogin();
-
             return ResponseEntity.ok(questionService.updateImagens(
-                    registrationNumber,
                     files,
                     statement,
                     pointsEnum,
@@ -134,7 +131,8 @@ public class QuestionController {
                     alternativeB,
                     alternativeC,
                     alternativeD,
-                    alternativeE));
+                    alternativeE,
+                    id));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();

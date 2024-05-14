@@ -2,6 +2,7 @@ package com.dat.dateca.domain.question;
 
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseRepository;
+import com.dat.dateca.domain.enade.EnadeAllDTO;
 import com.dat.dateca.domain.enade.ImageEnade;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorRepository;
@@ -52,18 +53,8 @@ public class QuestionService {
 
     @GetMapping
     public List<QuestionMultipleAllDTO> getAllQuestion() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAllQuestionWithImage();
-
-        if(questionList.isEmpty()) {
-            throw new EntityNotFoundException("Não há questões cadastradas");
-        }
-
-        return questionList;
-    }
-
-    @GetMapping
-    public List<QuestionMultipleAllDTO> getAllQuestionWithoutImages() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAllQuestionWithoutImage();
+        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAll()
+                .stream().map(QuestionMultipleAllDTO::new).toList();
 
         if(questionList.isEmpty()) {
             throw new EntityNotFoundException("Não há questões cadastradas");
@@ -189,7 +180,6 @@ public class QuestionService {
     }
 
     public QuestionMultipleAllDTO updateImagens(
-            String registrationNumber,
             MultipartFile[] files,
             String statement,
             String pointsEnum,
@@ -199,21 +189,26 @@ public class QuestionService {
             String alternativeB,
             String alternativeC,
             String alternativeD,
-            String alternativeE) throws IOException {
+            String alternativeE,
+            long id) throws IOException {
 
-        Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
+        QuestionMultipleChoice questionMultipleChoice = questionMultipleChoiceRepository.getReferenceById(id);
         Course courseSaved = courseRepository.findById(course).get();
 
-        var questionMultipleChoice = new QuestionMultipleChoice(statement,
-                PointsEnum.fromString(pointsEnum),
-                courseSaved,
-                professor,
-                correctAnswer,
-                alternativeA,
-                alternativeB,
-                alternativeC,
-                alternativeD,
-                alternativeE);
+        questionMultipleChoice.updateQuestionMultipleChoice(
+            new QuestionForm(
+                    statement,
+                    PointsEnum.fromString(pointsEnum),
+                    courseSaved.getId(),
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE
+            ),
+            courseSaved
+        );
 
         questionMultipleChoiceRepository.save(questionMultipleChoice);
 
