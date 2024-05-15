@@ -2,13 +2,13 @@ package com.dat.dateca.domain.question;
 
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseDTO;
+import com.dat.dateca.domain.enade.ImageEnadeDTO;
 
 import java.util.List;
 
 public record QuestionMultipleDTO(
         Long id,
 
-        List<Long> idImages,
         String statement,
         String pointsEnum,
         CourseDTO course,
@@ -17,12 +17,13 @@ public record QuestionMultipleDTO(
         String alternativeB,
         String alternativeC,
         String alternativeD,
-        String alternativeE
+        String alternativeE,
+
+        List<ImageQuestionDTO> images
 ) {
     public QuestionMultipleDTO(QuestionMultipleChoice questionMultipleChoice) {
         this(
                 questionMultipleChoice.getId(),
-                questionMultipleChoice.getIdImages(),
                 questionMultipleChoice.getStatement(),
                 questionMultipleChoice.getPointsEnum().getDescription(),
                 questionMultipleChoice.getCourseDTO(),
@@ -31,7 +32,8 @@ public record QuestionMultipleDTO(
                 questionMultipleChoice.getAlternativeB(),
                 questionMultipleChoice.getAlternativeC(),
                 questionMultipleChoice.getAlternativeD(),
-                questionMultipleChoice.getAlternativeE()
+                questionMultipleChoice.getAlternativeE(),
+                questionMultipleChoice.getImages().stream().map(ImageQuestionDTO::new).toList()
         );
     }
 }

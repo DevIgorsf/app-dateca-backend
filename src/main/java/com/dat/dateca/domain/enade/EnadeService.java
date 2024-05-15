@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -29,13 +28,13 @@ public class EnadeService {
     @Autowired
     private StudentRepository studentRepository;
 
-    public EnadeDTO createEnade(EnadeForm enadeForm) {
+    public EnadeAllDTO createEnade(EnadeForm enadeForm) {
         Enade enade = new Enade(enadeForm);
         enadeRepository.save(enade);
-        return new EnadeDTO(enade);
+        return new EnadeAllDTO(enade);
     }
 
-    public EnadeDTO updateEnade(Long id, EnadeForm enadeForm) {
+    public EnadeAllDTO updateEnade(Long id, EnadeForm enadeForm) {
         var enadeOptional = enadeRepository.findById(id);
 
         if( enadeOptional.isEmpty()) {
@@ -46,7 +45,7 @@ public class EnadeService {
         enade.updateEnade(enadeForm);
         enadeRepository.save(enade);
 
-        return new EnadeDTO(enade);
+        return new EnadeAllDTO(enade);
     }
 
     public EnadeDTO getEnade(Long id) {
@@ -116,7 +115,7 @@ public class EnadeService {
         return enadeRepository.count();
     }
 
-    public EnadeDTO salvarImagens(
+    public EnadeAllDTO salvarImagens(
             MultipartFile[] files,
             int year,
             int number,
@@ -156,7 +155,7 @@ public class EnadeService {
 
         imageEnadeRepository.saveAll(imagensSalvas);
 
-        return new EnadeDTO(enade);
+        return new EnadeAllDTO(enade);
     }
 
     public EnadeWithImageDTO getImages(Long id) {
@@ -167,7 +166,8 @@ public class EnadeService {
     }
 
     public List<EnadeAllDTO> getAllEnadeWithoutImages() {
-        List<EnadeAllDTO> enadeList = enadeRepository.findAllEnadeWithoutImage();
+        List<EnadeAllDTO> enadeList = enadeRepository.findAll()
+                .stream().map(EnadeAllDTO::new).toList();
 
         if(enadeList.isEmpty()) {
             throw new EntityNotFoundException("Não há questões cadastradas");
@@ -184,5 +184,52 @@ public class EnadeService {
         }
 
         return enadeList;
+    }
+
+    public EnadeAllDTO updateImagens(MultipartFile[] files,
+                                     int year,
+                                     int number,
+                                     String statement,
+                                     String pointsEnum,
+                                     Character correctAnswer,
+                                     String alternativeA,
+                                     String alternativeB,
+                                     String alternativeC,
+                                     String alternativeD,
+                                     String alternativeE,
+                                     long id) throws IOException {
+
+        Enade enade = enadeRepository.findById(id).orElse(null);
+
+        if (enade == null) {
+            throw new RuntimeException("Enade não encontrado com ID: " + id);
+        }
+
+        enade.updateEnade(new EnadeForm(
+                year,
+                number,
+                statement,
+                PointsEnum.fromString(pointsEnum),
+                correctAnswer,
+                alternativeA,
+                alternativeB,
+                alternativeC,
+                alternativeD,
+                alternativeE
+        ));
+
+        enade.getImages().clear();
+
+        for (MultipartFile file : files) {
+            ImageEnade imagem = new ImageEnade();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setEnade(enade);
+            enade.getImages().add(imagem);
+        }
+
+        enadeRepository.save(enade);
+
+        return new EnadeAllDTO(enade);
     }
 }

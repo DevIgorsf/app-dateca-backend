@@ -5,8 +5,6 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 
 public record QuestionForm(
-        @Nullable
-        Long id,
         String statement,
         PointsEnum pointsEnum,
         Long course,

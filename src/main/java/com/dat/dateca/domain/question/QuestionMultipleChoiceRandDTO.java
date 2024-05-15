@@ -6,7 +6,6 @@ import java.util.List;
 
 public record QuestionMultipleChoiceRandDTO(
         Long id,
-        List<Long> idImages,
         String statement,
         String alternativeA,
         String alternativeB,
@@ -17,7 +16,6 @@ public record QuestionMultipleChoiceRandDTO(
     public QuestionMultipleChoiceRandDTO(QuestionMultipleChoice questionMultipleChoice) {
         this(
                 questionMultipleChoice.getId(),
-                questionMultipleChoice.getIdImages(),
                 questionMultipleChoice.getStatement(),
                 questionMultipleChoice.getAlternativeA(),
                 questionMultipleChoice.getAlternativeB(),

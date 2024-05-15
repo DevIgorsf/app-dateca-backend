@@ -37,14 +37,9 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.OK).body(questionService.updateQuestion(id, questionForm));
     }
 
-    @GetMapping("/images")
+    @GetMapping
     public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestion() {
         return ResponseEntity.ok().body(questionService.getAllQuestion());
-    }
-
-    @GetMapping
-    public ResponseEntity<List<QuestionMultipleAllDTO>> getAllQuestionWithoutImages() {
-        return ResponseEntity.ok().body(questionService.getAllQuestionWithoutImages());
     }
 
     @GetMapping("/{id}")
@@ -111,8 +106,36 @@ public class QuestionController {
         }
     }
 
-    @GetMapping("/imagens/{idImages}")
-    public ImageQuestion getImagens(@PathVariable String idImages) {
-        return imageQuestionRepository.findById(Long.valueOf(idImages)).get();
+    @PutMapping("/imagens/{id}")
+    public ResponseEntity<QuestionMultipleAllDTO> updated(
+            @RequestParam("imageFile") MultipartFile[] files,
+            @RequestParam("statement") String statement,
+            @RequestParam("pointsEnum") String pointsEnum,
+            @RequestParam("course") Long course,
+            @RequestParam("correctAnswer") Character correctAnswer,
+            @RequestParam("alternativeA") String alternativeA,
+            @RequestParam("alternativeB") String alternativeB,
+            @RequestParam("alternativeC") String alternativeC,
+            @RequestParam("alternativeD") String alternativeD,
+            @RequestParam("alternativeE") String alternativeE,
+            long id) {
+        try {
+
+            return ResponseEntity.ok(questionService.updateImagens(
+                    files,
+                    statement,
+                    pointsEnum,
+                    course,
+                    correctAnswer,
+                    alternativeA,
+                    alternativeB,
+                    alternativeC,
+                    alternativeD,
+                    alternativeE,
+                    id));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

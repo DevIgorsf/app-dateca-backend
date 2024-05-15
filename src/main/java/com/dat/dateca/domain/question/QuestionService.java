@@ -2,6 +2,8 @@ package com.dat.dateca.domain.question;
 
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseRepository;
+import com.dat.dateca.domain.enade.EnadeAllDTO;
+import com.dat.dateca.domain.enade.ImageEnade;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorRepository;
 import com.dat.dateca.domain.student.Student;
@@ -51,19 +53,7 @@ public class QuestionService {
 
     @GetMapping
     public List<QuestionMultipleAllDTO> getAllQuestion() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findByidImagesIsNotEmpty()
-                .stream().map(QuestionMultipleAllDTO::new).toList();
-
-        if(questionList.isEmpty()) {
-            throw new EntityNotFoundException("Não há questões cadastradas");
-        }
-
-        return questionList;
-    }
-
-    @GetMapping
-    public List<QuestionMultipleAllDTO> getAllQuestionWithoutImages() {
-        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findByidImagesIsEmpty()
+        List<QuestionMultipleAllDTO> questionList = questionMultipleChoiceRepository.findAll()
                 .stream().map(QuestionMultipleAllDTO::new).toList();
 
         if(questionList.isEmpty()) {
@@ -157,23 +147,10 @@ public class QuestionService {
             String alternativeD,
             String alternativeE) throws IOException {
 
-        List<ImageQuestion> imagensSalvas = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            ImageQuestion imagem = new ImageQuestion();
-            imagem.setNome(file.getOriginalFilename());
-            imagem.setImagem(file.getBytes());
-
-            imagensSalvas.add(imagem);
-        }
-
-        imageQuestionRepository.saveAll(imagensSalvas);
-
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
         Course courseSaved = courseRepository.findById(course).get();
 
         var questionMultipleChoice = new QuestionMultipleChoice(statement,
-                imagensSalvas.stream().map(ImageQuestion::getId).collect(Collectors.toList()),
                 PointsEnum.fromString(pointsEnum),
                 courseSaved,
                 professor,
@@ -186,6 +163,74 @@ public class QuestionService {
 
         questionMultipleChoiceRepository.save(questionMultipleChoice);
 
+        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            ImageQuestion imagem = new ImageQuestion();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setQuestion(questionMultipleChoice);
+
+            imagensSalvas.add(imagem);
+        }
+
+        imageQuestionRepository.saveAll(imagensSalvas);
+
         return questionMultipleChoice;
+    }
+
+    public QuestionMultipleAllDTO updateImagens(
+            MultipartFile[] files,
+            String statement,
+            String pointsEnum,
+            Long course,
+            Character correctAnswer,
+            String alternativeA,
+            String alternativeB,
+            String alternativeC,
+            String alternativeD,
+            String alternativeE,
+            long id) throws IOException {
+
+        QuestionMultipleChoice questionMultipleChoice = questionMultipleChoiceRepository.findById(id).orElse(null);
+
+        if (questionMultipleChoice == null) {
+            throw new RuntimeException("Pergunta não encontrada com ID: " + id);
+        }
+
+        Course courseSaved = courseRepository.findById(course).orElse(null);
+
+        if (courseSaved == null) {
+            throw new RuntimeException("Curso não encontrado com ID: " + course);
+        }
+
+        questionMultipleChoice.updateQuestionMultipleChoice(
+                new QuestionForm(
+                        statement,
+                        PointsEnum.fromString(pointsEnum),
+                        courseSaved.getId(),
+                        correctAnswer,
+                        alternativeA,
+                        alternativeB,
+                        alternativeC,
+                        alternativeD,
+                        alternativeE
+                ),
+                courseSaved
+        );
+
+        questionMultipleChoice.getImages().clear();
+
+        for (MultipartFile file : files) {
+            ImageQuestion imagem = new ImageQuestion();
+            imagem.setNome(file.getOriginalFilename());
+            imagem.setImagem(file.getBytes());
+            imagem.setQuestion(questionMultipleChoice);
+            questionMultipleChoice.getImages().add(imagem);
+        }
+
+        questionMultipleChoiceRepository.save(questionMultipleChoice);
+
+        return new QuestionMultipleAllDTO(questionMultipleChoice);
     }
 }
