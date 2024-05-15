@@ -192,38 +192,44 @@ public class QuestionService {
             String alternativeE,
             long id) throws IOException {
 
-        QuestionMultipleChoice questionMultipleChoice = questionMultipleChoiceRepository.getReferenceById(id);
-        Course courseSaved = courseRepository.findById(course).get();
+        QuestionMultipleChoice questionMultipleChoice = questionMultipleChoiceRepository.findById(id).orElse(null);
+
+        if (questionMultipleChoice == null) {
+            throw new RuntimeException("Pergunta não encontrada com ID: " + id);
+        }
+
+        Course courseSaved = courseRepository.findById(course).orElse(null);
+
+        if (courseSaved == null) {
+            throw new RuntimeException("Curso não encontrado com ID: " + course);
+        }
 
         questionMultipleChoice.updateQuestionMultipleChoice(
-            new QuestionForm(
-                    statement,
-                    PointsEnum.fromString(pointsEnum),
-                    courseSaved.getId(),
-                    correctAnswer,
-                    alternativeA,
-                    alternativeB,
-                    alternativeC,
-                    alternativeD,
-                    alternativeE
-            ),
-            courseSaved
+                new QuestionForm(
+                        statement,
+                        PointsEnum.fromString(pointsEnum),
+                        courseSaved.getId(),
+                        correctAnswer,
+                        alternativeA,
+                        alternativeB,
+                        alternativeC,
+                        alternativeD,
+                        alternativeE
+                ),
+                courseSaved
         );
 
-        questionMultipleChoiceRepository.save(questionMultipleChoice);
-
-        List<ImageQuestion> imagensSalvas = new ArrayList<>();
+        questionMultipleChoice.getImages().clear();
 
         for (MultipartFile file : files) {
             ImageQuestion imagem = new ImageQuestion();
             imagem.setNome(file.getOriginalFilename());
             imagem.setImagem(file.getBytes());
             imagem.setQuestion(questionMultipleChoice);
-
-            imagensSalvas.add(imagem);
+            questionMultipleChoice.getImages().add(imagem);
         }
 
-        imageQuestionRepository.saveAll(imagensSalvas);
+        questionMultipleChoiceRepository.save(questionMultipleChoice);
 
         return new QuestionMultipleAllDTO(questionMultipleChoice);
     }

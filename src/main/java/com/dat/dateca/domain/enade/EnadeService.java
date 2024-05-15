@@ -187,19 +187,23 @@ public class EnadeService {
     }
 
     public EnadeAllDTO updateImagens(MultipartFile[] files,
-                                  int year,
-                                  int number,
-                                  String statement,
-                                  String pointsEnum,
-                                  Character correctAnswer,
-                                  String alternativeA,
-                                  String alternativeB,
-                                  String alternativeC,
-                                  String alternativeD,
-                                  String alternativeE,
-                                  long id) throws IOException {
+                                     int year,
+                                     int number,
+                                     String statement,
+                                     String pointsEnum,
+                                     Character correctAnswer,
+                                     String alternativeA,
+                                     String alternativeB,
+                                     String alternativeC,
+                                     String alternativeD,
+                                     String alternativeE,
+                                     long id) throws IOException {
 
-        Enade enade = enadeRepository.findById(id).get();
+        Enade enade = enadeRepository.findById(id).orElse(null);
+
+        if (enade == null) {
+            throw new RuntimeException("Enade não encontrado com ID: " + id);
+        }
 
         enade.updateEnade(new EnadeForm(
                 year,
@@ -214,20 +218,17 @@ public class EnadeService {
                 alternativeE
         ));
 
-        enadeRepository.save(enade);
-
-        List<ImageEnade> imagensSalvas = new ArrayList<>();
+        enade.getImages().clear();
 
         for (MultipartFile file : files) {
             ImageEnade imagem = new ImageEnade();
             imagem.setNome(file.getOriginalFilename());
             imagem.setImagem(file.getBytes());
             imagem.setEnade(enade);
-
-            imagensSalvas.add(imagem);
+            enade.getImages().add(imagem);
         }
 
-        imageEnadeRepository.saveAll(imagensSalvas);
+        enadeRepository.save(enade);
 
         return new EnadeAllDTO(enade);
     }
