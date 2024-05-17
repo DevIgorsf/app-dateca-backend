@@ -85,28 +85,26 @@ public class EnadeService {
 
     public QuestionAnswerDTO answerEnade(Long id, String answer, String registrationNumber) {
         var optionalEnade = enadeRepository.findById(id);
-        Student stundent = studentRepository.findByRegistrationNumber(registrationNumber);
+        Student student = studentRepository.findByRegistrationNumber(registrationNumber);
 
         if (optionalEnade.isEmpty()) {
             throw new EntityNotFoundException("Questão do enade não encontrada");
         }
 
         Enade enade = optionalEnade.get();
-
         char correctAnswerChar = answer.charAt(0);
-
         int result =  Character.compare(enade.getCorrectAnswer(), correctAnswerChar);
-        if(result == 0) {
-            EnadeAnswerResult enadeAnswerResult = new EnadeAnswerResult(enade, true);
-            enadeAnswerResultRepository.save(enadeAnswerResult);
 
-            stundent.addPontuacao(enade.getPointsEnum().getKey());
-            studentRepository.save(stundent);
-            return new QuestionAnswerDTO(enade.getCorrectAnswer(), correctAnswerChar, true);
+        EnadeAnswerResult enadeAnswerResult;
+        if(result == 0) {
+            enadeAnswerResult = new EnadeAnswerResult(enade, true);
+            student.addPontuacao(enade.getPointsEnum().getKey());
+        } else {
+            enadeAnswerResult = new EnadeAnswerResult(enade, false);
         }
 
-        EnadeAnswerResult enadeAnswerResult = new EnadeAnswerResult(enade, false);
         enadeAnswerResultRepository.save(enadeAnswerResult);
+        studentRepository.save(student);
 
         return new QuestionAnswerDTO(enade.getCorrectAnswer(), correctAnswerChar, false);
     }
