@@ -137,6 +137,6 @@ public class EnadeController {
 
     @GetMapping
     public ResponseEntity<List<EnadeAllDTO>> getAllEnade() {
-        return ResponseEntity.ok().body(enadeService.getAllEnadeWithImages());
+        return ResponseEntity.ok().body(enadeService.getAllEnade());
     }
 }
