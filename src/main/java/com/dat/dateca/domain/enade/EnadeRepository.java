@@ -23,4 +23,10 @@ public interface EnadeRepository extends JpaRepository<Enade, Long> {
 
     @Query("SELECT q FROM Enade q JOIN q.images i")
     List<EnadeAllDTO> findAllEnadeWithImage();
+
+    @Query("SELECT new com.dat.dateca.domain.enade.EnadeRandDTO(" +
+            "e.id, e.year, e.number, e.statement, e.alternativeA, " +
+            "e.alternativeB, e.alternativeC, e.alternativeD, e.alternativeE) " +
+            "FROM Enade e WHERE e.id = :id")
+    Optional<EnadeRandDTO> findEnadeRandDTOById(@Param("id") Long id);
 }

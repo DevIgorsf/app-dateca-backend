@@ -5,6 +5,8 @@ import com.dat.dateca.domain.student.Student;
 import com.dat.dateca.domain.student.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +30,7 @@ public class EnadeService {
     @Autowired
     private StudentRepository studentRepository;
 
+    @CacheEvict(value = "enade")
     public EnadeAllDTO createEnade(EnadeForm enadeForm) {
         Enade enade = new Enade(enadeForm);
         enadeRepository.save(enade);
@@ -71,9 +74,13 @@ public class EnadeService {
         
         long indiceSorteado = random.nextLong(enadeIds.size());
 
-        Enade enade = enadeRepository.findById(enadeIds.get((int) indiceSorteado)).get();
+        var enadeRandDTOOptional = enadeRepository.findEnadeRandDTOById(enadeIds.get((int) indiceSorteado));
 
-        return new EnadeRandDTO(enade);
+        if (enadeRandDTOOptional.isEmpty()) {
+            throw new EntityNotFoundException("Questão do Enade não encontrada");
+        }
+
+        return enadeRandDTOOptional.get();
     }
 
     public String deleteEnade(Long id) {
