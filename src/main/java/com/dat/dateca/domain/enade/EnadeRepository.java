@@ -18,15 +18,6 @@ public interface EnadeRepository extends JpaRepository<Enade, Long> {
     @Query("SELECT q FROM Enade q WHERE q.id IN :ids ORDER BY RAND() LIMIT 1")
     Optional<EnadeDTO> findRandomEnadeByIds(@Param("ids") List<Long> ids);
 
-    @Query("SELECT q FROM Enade q LEFT JOIN q.images i WHERE i IS NULL")
-    List<EnadeAllDTO> findAllEnadeWithoutImage();
-
     @Query("SELECT q FROM Enade q JOIN q.images i")
     List<EnadeAllDTO> findAllEnadeWithImage();
-
-    @Query("SELECT new com.dat.dateca.domain.enade.EnadeRandDTO(" +
-            "e.id, e.year, e.number, e.statement, e.alternativeA, " +
-            "e.alternativeB, e.alternativeC, e.alternativeD, e.alternativeE) " +
-            "FROM Enade e WHERE e.id = :id")
-    Optional<EnadeRandDTO> findEnadeRandDTOById(@Param("id") Long id);
 }

@@ -74,13 +74,9 @@ public class EnadeService {
         
         long indiceSorteado = random.nextLong(enadeIds.size());
 
-        var enadeRandDTOOptional = enadeRepository.findEnadeRandDTOById(enadeIds.get((int) indiceSorteado));
+        Enade enade = enadeRepository.findById(enadeIds.get((int) indiceSorteado)).get();
 
-        if (enadeRandDTOOptional.isEmpty()) {
-            throw new EntityNotFoundException("Questão do Enade não encontrada");
-        }
-
-        return enadeRandDTOOptional.get();
+        return new EnadeRandDTO(enade);
     }
 
     public String deleteEnade(Long id) {
