@@ -6,7 +6,6 @@ import com.dat.dateca.domain.student.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,9 +71,9 @@ public class EnadeService {
 
         Random random = new Random();
         
-        long indiceSorteado = random.nextLong(enadeIds.size());
+        int indiceSorteado = random.nextInt(enadeIds.size());
 
-        Enade enade = enadeRepository.findById(enadeIds.get((int) indiceSorteado)).get();
+        Enade enade = enadeRepository.findById(enadeIds.get(indiceSorteado)).get();
 
         return new EnadeRandDTO(enade);
     }
