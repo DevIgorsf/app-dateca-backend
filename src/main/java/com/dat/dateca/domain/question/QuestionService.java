@@ -101,9 +101,9 @@ public class QuestionService {
 
         Random random = new Random();
 
-        long indiceSorteado = random.nextLong(multipleChoiceIds.size());
+        int indiceSorteado = random.nextInt(multipleChoiceIds.size());
 
-        var question = questionMultipleChoiceRepository.findById(multipleChoiceIds.get((int) indiceSorteado)).get();
+        var question = questionMultipleChoiceRepository.findById(multipleChoiceIds.get(indiceSorteado)).get();
 
         return new QuestionMultipleChoiceRandDTO(question);
     }

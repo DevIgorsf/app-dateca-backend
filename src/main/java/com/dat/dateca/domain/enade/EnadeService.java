@@ -69,9 +69,9 @@ public class EnadeService {
 
         Random random = new Random();
         
-        long indiceSorteado = random.nextLong(enadeIds.size());
+        int indiceSorteado = random.nextInt(enadeIds.size());
 
-        Enade enade = enadeRepository.findById(enadeIds.get((int) indiceSorteado)).get();
+        Enade enade = enadeRepository.findById(enadeIds.get(indiceSorteado)).get();
 
         return new EnadeRandDTO(enade);
     }
