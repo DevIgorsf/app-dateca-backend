@@ -71,6 +71,11 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.OK).body(questionService.getQuestionData());
     }
 
+    @GetMapping("/resultados")
+    public ResponseEntity<QuestionResultDTO> getQuestionResult() {
+        return ResponseEntity.status(HttpStatus.OK).body(questionService.getQuestionResult());
+    }
+
     @PostMapping("/imagens")
     public ResponseEntity<QuestionMultipleChoice> salvar(
             @RequestParam("imageFile") MultipartFile[] files,
