@@ -140,7 +140,7 @@ public class EnadeController {
         return ResponseEntity.ok().body(enadeService.getAllEnade());
     }
 
-    @GetMapping("/porcentagem")
+    @GetMapping("/resultados")
     public ResponseEntity<EnadePorcentagemDTO> getEnadePorcentagem() {
         return ResponseEntity.status(HttpStatus.OK).body(enadeService.getEnadePorcentagem());
     }
