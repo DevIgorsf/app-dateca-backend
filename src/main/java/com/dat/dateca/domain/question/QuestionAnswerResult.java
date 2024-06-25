@@ -1,8 +1,10 @@
 package com.dat.dateca.domain.question;
 
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class QuestionAnswerResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
