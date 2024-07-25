@@ -129,12 +129,13 @@ public class QuestionService {
         if(result == 0) {
             questionAnswerResult = new QuestionAnswerResult(question, true);
             stundent.addPontuacao(question.getPointsEnum().getKey());
-            studentRepository.save(stundent);
         }
         else {
             questionAnswerResult = new QuestionAnswerResult(question, false);
         }
 
+        questionAnswerResultRepository.save(questionAnswerResult);
+        studentRepository.save(stundent);
 
         return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, questionAnswerResult.getCorrect());
     }

@@ -3,8 +3,8 @@ package com.dat.dateca.domain.question;
 import java.util.List;
 
 public record QuestionResultDTO(
-        long questionTotal,
-        long questionCorrect
+        long questoesFeitas,
+        long questoesCorrect
 ) {
     public QuestionResultDTO(List<QuestionAnswerResult> questionAnswerResult) {
         this(
