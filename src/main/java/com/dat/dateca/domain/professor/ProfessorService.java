@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class ProfessorService {
@@ -30,14 +31,30 @@ public class ProfessorService {
         User usuario = new User();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         usuario.setLogin(professorCreate.registrationNumber().toString());
-        usuario.setPassword(encoder.encode("123456"));
+        CharSequence randomCharSequence = generateRandomCharSequence(8);
+        usuario.setPassword(encoder.encode(randomCharSequence));
         usuario.setRoles(RoleEnum.PROFESSOR);
         userRepository.save(usuario);
 
         emailService.sendSimpleMessage(
-                professorCreate.email(), "Você foi cadastrado no dateca", "Sua senha é 123456");
+                professorCreate.email(), "Você foi cadastrado no dateca",
+                "Faça seu acesso pelo link https://app-dateca-admin-front.vercel.app/login com o login "
+                        + usuario.getLogin() + " e a senha " + randomCharSequence);
 
         return new ProfessorDTO(professor);
+    }
+
+    public static CharSequence generateRandomCharSequence(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb;
     }
 
     public List<ProfessorDTO> getAllProfessors() {
