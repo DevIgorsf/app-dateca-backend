@@ -1,5 +1,6 @@
 package com.dat.dateca.domain.professor;
 
+import com.dat.dateca.domain.email.EmailService;
 import com.dat.dateca.domain.user.RoleEnum;
 import com.dat.dateca.domain.user.User;
 import com.dat.dateca.domain.user.UserRepository;
@@ -19,6 +20,9 @@ public class ProfessorService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public ProfessorDTO createProfessor(ProfessorCreate professorCreate) {
         var professor = new Professor(professorCreate);
         professorRepository.save(professor);
@@ -29,6 +33,9 @@ public class ProfessorService {
         usuario.setPassword(encoder.encode("123456"));
         usuario.setRoles(RoleEnum.PROFESSOR);
         userRepository.save(usuario);
+
+        emailService.sendSimpleMessage(
+                professorCreate.email(), "Você foi cadastrado no dateca", "Sua senha é 123456");
 
         return new ProfessorDTO(professor);
     }

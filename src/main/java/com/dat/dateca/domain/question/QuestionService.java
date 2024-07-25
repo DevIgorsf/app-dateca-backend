@@ -3,6 +3,7 @@ package com.dat.dateca.domain.question;
 import com.dat.dateca.domain.course.Course;
 import com.dat.dateca.domain.course.CourseRepository;
 import com.dat.dateca.domain.enade.EnadeAllDTO;
+import com.dat.dateca.domain.enade.EnadeAnswerResult;
 import com.dat.dateca.domain.enade.ImageEnade;
 import com.dat.dateca.domain.professor.Professor;
 import com.dat.dateca.domain.professor.ProfessorRepository;
@@ -42,6 +43,9 @@ public class QuestionService {
 
     @Autowired
     private ImageQuestionRepository imageQuestionRepository;
+
+    @Autowired
+    private QuestionAnswerResultRepository questionAnswerResultRepository;
 
     public QuestionMultipleDTO createQuestion(QuestionForm questionForm, String registrationNumber) {
         Professor professor = professorRepository.findByRegistrationNumber(registrationNumber);
@@ -121,13 +125,19 @@ public class QuestionService {
         char correctAnswerChar = answer.charAt(0);
 
         int result =  Character.compare(question.getCorrectAnswer(), correctAnswerChar);
+        QuestionAnswerResult questionAnswerResult;
         if(result == 0) {
+            questionAnswerResult = new QuestionAnswerResult(question, true);
             stundent.addPontuacao(question.getPointsEnum().getKey());
-            studentRepository.save(stundent);
-            return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, true);
+        }
+        else {
+            questionAnswerResult = new QuestionAnswerResult(question, false);
         }
 
-        return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, false);
+        questionAnswerResultRepository.save(questionAnswerResult);
+        studentRepository.save(stundent);
+
+        return new QuestionAnswerDTO(question.getCorrectAnswer(), correctAnswerChar, questionAnswerResult.getCorrect());
     }
 
     public Long getQuestionData() {
@@ -232,5 +242,11 @@ public class QuestionService {
         questionMultipleChoiceRepository.save(questionMultipleChoice);
 
         return new QuestionMultipleAllDTO(questionMultipleChoice);
+    }
+
+    public QuestionResultDTO getQuestionResult() {
+        var questionAnswerResult = questionAnswerResultRepository.findAll();
+
+        return new QuestionResultDTO(questionAnswerResult);
     }
 }

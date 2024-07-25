@@ -1,5 +1,6 @@
 package com.dat.dateca.domain.student;
 
+import com.dat.dateca.domain.email.EmailService;
 import com.dat.dateca.domain.user.RoleEnum;
 import com.dat.dateca.domain.user.User;
 import com.dat.dateca.domain.user.UserRepository;
@@ -20,6 +21,9 @@ public class StudentService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public StudentDTO cadastroAluno(StudentCadastro studentCadastro) {
         var student = new Student(studentCadastro);
         studentRepository.save(student);
@@ -30,6 +34,9 @@ public class StudentService {
         usuario.setPassword(encoder.encode("123456"));
         usuario.setRoles(RoleEnum.STUDENT);
         userRepository.save(usuario);
+
+        emailService.sendSimpleMessage(
+                studentCadastro.email(), "Novo cadastro dateca", "Sua senha é 123456");
 
         return new StudentDTO(student);
     }

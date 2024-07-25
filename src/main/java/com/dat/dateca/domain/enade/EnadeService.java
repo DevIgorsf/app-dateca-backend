@@ -222,4 +222,11 @@ public class EnadeService {
 
         return new EnadeAllDTO(enade);
     }
+
+    public EnadePorcentagemDTO getEnadePorcentagem() {
+        long questoesFeitas = enadeAnswerResultRepository.count();
+        long questoesCorrect = enadeAnswerResultRepository.countCorrect();
+
+        return new EnadePorcentagemDTO(questoesFeitas, questoesCorrect);
+    }
 }
