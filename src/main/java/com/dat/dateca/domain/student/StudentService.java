@@ -5,6 +5,7 @@ import com.dat.dateca.domain.user.RoleEnum;
 import com.dat.dateca.domain.user.User;
 import com.dat.dateca.domain.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -91,5 +92,11 @@ public class StudentService {
 
     public Long getStudentData() {
         return studentRepository.count();
+    }
+
+    public Student getAuthenticatedStudent() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String registrationNumber = ((User) principal).getLogin();
+        return studentRepository.findByRegistrationNumber(registrationNumber);
     }
 }
