@@ -6,6 +6,9 @@ import com.dat.dateca.domain.friendship.DuplicateFriendshipException;
 import com.dat.dateca.domain.friendship.ForbiddenFriendshipActionException;
 import com.dat.dateca.domain.friendship.FriendshipNotFoundException;
 import com.dat.dateca.domain.friendship.IllegalFriendshipStateException;
+import com.dat.dateca.domain.prova.ProvaAccessDeniedException;
+import com.dat.dateca.domain.prova.ProvaConflitoException;
+import com.dat.dateca.domain.prova.ProvaInvalidaException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -78,5 +81,23 @@ public class GlobalExceptions {
     public ResponseEntity<StandardError> friendshipNotFoundException(FriendshipNotFoundException e, HttpServletRequest request) {
         StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(se);
+    }
+
+    @ExceptionHandler(ProvaAccessDeniedException.class)
+    public ResponseEntity<StandardError> provaAccessDeniedException(ProvaAccessDeniedException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(se);
+    }
+
+    @ExceptionHandler(ProvaConflitoException.class)
+    public ResponseEntity<StandardError> provaConflitoException(ProvaConflitoException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.CONFLICT.value(), HttpStatus.CONFLICT.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(se);
+    }
+
+    @ExceptionHandler(ProvaInvalidaException.class)
+    public ResponseEntity<StandardError> provaInvalidaException(ProvaInvalidaException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
     }
 }
