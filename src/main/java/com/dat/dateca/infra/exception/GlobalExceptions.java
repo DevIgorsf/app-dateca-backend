@@ -9,6 +9,13 @@ import com.dat.dateca.domain.friendship.IllegalFriendshipStateException;
 import com.dat.dateca.domain.prova.ProvaAccessDeniedException;
 import com.dat.dateca.domain.prova.ProvaConflitoException;
 import com.dat.dateca.domain.prova.ProvaInvalidaException;
+import com.dat.dateca.exam.domain.ExamNotFoundException;
+import com.dat.dateca.importacao.domain.exceptions.CorruptedPdfException;
+import com.dat.dateca.importacao.domain.exceptions.ExtractionFailedException;
+import com.dat.dateca.importacao.domain.exceptions.ImportJobNotFoundException;
+import com.dat.dateca.importacao.domain.exceptions.ImportJobStateConflictException;
+import com.dat.dateca.importacao.domain.exceptions.PublishValidationException;
+import com.dat.dateca.importacao.domain.exceptions.UnsupportedFileTypeException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -99,5 +106,47 @@ public class GlobalExceptions {
     public ResponseEntity<StandardError> provaInvalidaException(ProvaInvalidaException e, HttpServletRequest request) {
         StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
+    }
+
+    @ExceptionHandler(ImportJobNotFoundException.class)
+    public ResponseEntity<StandardError> importJobNotFoundException(ImportJobNotFoundException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(se);
+    }
+
+    @ExceptionHandler(UnsupportedFileTypeException.class)
+    public ResponseEntity<StandardError> unsupportedFileTypeException(UnsupportedFileTypeException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
+    }
+
+    @ExceptionHandler(CorruptedPdfException.class)
+    public ResponseEntity<StandardError> corruptedPdfException(CorruptedPdfException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
+    }
+
+    @ExceptionHandler(PublishValidationException.class)
+    public ResponseEntity<StandardError> publishValidationException(PublishValidationException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(se);
+    }
+
+    @ExceptionHandler(ImportJobStateConflictException.class)
+    public ResponseEntity<StandardError> importJobStateConflictException(ImportJobStateConflictException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.CONFLICT.value(), HttpStatus.CONFLICT.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(se);
+    }
+
+    @ExceptionHandler(ExtractionFailedException.class)
+    public ResponseEntity<StandardError> extractionFailedException(ExtractionFailedException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.BAD_GATEWAY.value(), HttpStatus.BAD_GATEWAY.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(se);
+    }
+
+    @ExceptionHandler(ExamNotFoundException.class)
+    public ResponseEntity<StandardError> examNotFoundException(ExamNotFoundException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(se);
     }
 }
