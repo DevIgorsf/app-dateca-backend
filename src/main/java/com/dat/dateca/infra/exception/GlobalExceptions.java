@@ -27,6 +27,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 
@@ -169,5 +170,15 @@ public class GlobalExceptions {
     public ResponseEntity<StandardError> examNotFoundException(ExamNotFoundException e, HttpServletRequest request) {
         StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(se);
+    }
+
+    /**
+     * Estouro do limite de multipart do container: acontece antes de o arquivo chegar ao controller,
+     * entao sem este handler cairia no catch-all e viraria um 500 generico.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<StandardError> maxUploadSizeExceededException(MaxUploadSizeExceededException e, HttpServletRequest request) {
+        StandardError se = new StandardError(LocalDateTime.now(), HttpStatus.PAYLOAD_TOO_LARGE.value(), HttpStatus.PAYLOAD_TOO_LARGE.getReasonPhrase(), "O arquivo enviado excede o tamanho máximo permitido.", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(se);
     }
 }
