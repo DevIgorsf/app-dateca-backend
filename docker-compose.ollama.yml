@@ -1,0 +1,51 @@
+# Ollama local para o caminho de extracao de provas em desenvolvimento/MVP.
+#
+# Opcional: use isto no lugar da instalacao nativa do Ollama, para ligar/desligar junto do resto do
+# ambiente e reproduzir o setup em qualquer maquina. Standalone de proposito (o projeto ainda nao
+# tem um docker-compose principal) - quando houver, mova o servico "ollama" e o volume para la.
+#
+# Subir:            docker compose -f docker-compose.ollama.yml up -d
+# Baixar o modelo:  ja e feito pelo servico "ollama-pull" no primeiro up (aguarde terminar)
+# Testar:           curl http://localhost:11434
+# Derrubar:         docker compose -f docker-compose.ollama.yml down
+#
+# Sem GPU dedicada, o Ollama roda em CPU automaticamente. Para usar GPU NVIDIA, descomente o bloco
+# "deploy.resources.reservations.devices" abaixo (requer nvidia-container-toolkit no host).
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: dateca-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    # GPU NVIDIA (opcional):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # Baixa o modelo uma vez, quando o Ollama fica saudavel, e encerra.
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: dateca-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama", "pull", "qwen2.5:7b-instruct-q4_K_M"]
+    restart: "no"
+
+volumes:
+  ollama-models:

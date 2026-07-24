@@ -22,39 +22,37 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Extração estruturada via Anthropic Messages API (tool-use com schema forçado). Páginas sem texto
- * nativo confiável (ou com layout ambíguo) chegam aqui como imagem rasterizada em vez de texto — a
- * mesma chamada faz OCR e estruturação, sem Tesseract.
+ * Implementação local de {@link VisionExtractionPort} contra o Ollama, pela API compatível com o
+ * formato OpenAI ({@code /v1/chat/completions}). Reproduz as mesmas três chamadas e os mesmos
+ * schemas do adapter da Anthropic (ver {@link ExtractionPrompts}), usando tool calling para forçar
+ * a saída estruturada — mantendo o princípio de nunca parsear prosa.
  *
- * <p>Duas garantias que o pipeline depende: quando a geração é cortada por {@code max_tokens} o
- * adapter escala o limite e, se ainda assim não couber, devolve
- * {@link QuestionExtractionBatch#truncated} em vez de fingir que a resposta veio completa; e erros
- * 4xx (chave inválida, payload malformado) falham na primeira tentativa em vez de consumir o
- * orçamento de retry.
+ * <p>Uso pretendido como provedor de desenvolvimento/MVP para o caminho de <em>texto nativo</em>. O
+ * caminho de páginas rasterizadas (provas escaneadas) fica no adapter da Anthropic via
+ * {@link RoutingVisionExtractionAdapter}, por ser mais exigente em qualidade de visão.
  */
-public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
+public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
 
-    private static final Logger log = LoggerFactory.getLogger(AnthropicVisionExtractionAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(OllamaVisionExtractionAdapter.class);
 
-    private static final String MESSAGES_URI = "/v1/messages";
-    private static final String STOP_REASON_MAX_TOKENS = "max_tokens";
+    private static final String CHAT_URI = "/v1/chat/completions";
+    private static final String FINISH_REASON_LENGTH = "length";
     private static final long RETRY_BASE_DELAY_MS = 500L;
 
     private final RestClient restClient;
-    private final AnthropicProperties properties;
+    private final OllamaProperties properties;
     private final ObjectMapper objectMapper;
 
-    public AnthropicVisionExtractionAdapter(AnthropicProperties properties, ObjectMapper objectMapper) {
+    public OllamaVisionExtractionAdapter(OllamaProperties properties, ObjectMapper objectMapper) {
         this(properties, objectMapper, RestClient.builder()
                 .requestFactory(RestClientFactories.withTimeouts(properties.getConnectTimeout(), properties.getReadTimeout()))
                 .baseUrl(properties.getBaseUrl())
-                .defaultHeader("anthropic-version", properties.getVersion())
                 .defaultHeader("content-type", "application/json")
                 .build());
     }
 
     // Visível para testes: permite injetar um RestClient ligado a um MockRestServiceServer.
-    AnthropicVisionExtractionAdapter(AnthropicProperties properties, ObjectMapper objectMapper, RestClient restClient) {
+    OllamaVisionExtractionAdapter(OllamaProperties properties, ObjectMapper objectMapper, RestClient restClient) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.restClient = restClient;
@@ -81,35 +79,31 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
         return ExtractionResultMapper.toAnswerKey(outcome.input());
     }
 
-    /**
-     * Chama a ferramenta escalando {@code max_tokens} enquanto a resposta vier cortada. Devolve
-     * {@code truncated=true} apenas quando nem o teto configurado foi suficiente — a partir daí a
-     * decisão (quebrar o bloco, marcar para revisão) é do orquestrador.
-     */
     private ToolCallOutcome callTool(String toolName, String systemPrompt, String schemaJson, List<PageInput> pages) {
         int maxTokens = Math.max(1, properties.getMaxTokens());
         int ceiling = Math.max(maxTokens, properties.getMaxTokensCeiling());
 
         while (true) {
             JsonNode response = post(buildRequestBody(toolName, systemPrompt, schemaJson, pages, maxTokens));
-            JsonNode input = findToolInput(response, toolName);
+            JsonNode choice = response.path("choices").path(0);
+            JsonNode input = findToolArguments(choice, toolName);
 
-            if (!STOP_REASON_MAX_TOKENS.equals(response.path("stop_reason").asText(""))) {
+            if (!FINISH_REASON_LENGTH.equals(choice.path("finish_reason").asText(""))) {
                 if (input == null) {
                     throw new ExtractionFailedException(
-                            "A IA não retornou o resultado estruturado esperado para " + toolName);
+                            "O Ollama não retornou o resultado estruturado esperado para " + toolName);
                 }
                 return new ToolCallOutcome(input, false);
             }
 
             if (maxTokens >= ceiling) {
-                log.warn("Resposta de {} truncada mesmo com max_tokens={} (teto configurado); "
+                log.warn("Resposta de {} truncada mesmo com num_predict={} (teto configurado); "
                         + "o bloco será reprocessado em partes menores", toolName, maxTokens);
                 return new ToolCallOutcome(input != null ? input : objectMapper.createObjectNode(), true);
             }
 
             int escalated = Math.min(maxTokens * 2, ceiling);
-            log.warn("Resposta de {} truncada com max_tokens={}; repetindo o bloco com max_tokens={}",
+            log.warn("Resposta de {} truncada com num_predict={}; repetindo o bloco com num_predict={}",
                     toolName, maxTokens, escalated);
             maxTokens = escalated;
         }
@@ -122,31 +116,28 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                // Serializamos/parseamos com o ObjectMapper (Jackson 2) em vez de deixar a cargo dos
-                // conversores do RestClient — o Spring 7 pode preferir Jackson 3 e falhar ao mapear
-                // com.fasterxml.jackson.databind.JsonNode.
+                // Serializa/parseia com o ObjectMapper (Jackson 2) em vez dos conversores do
+                // RestClient — o Spring 7 pode preferir Jackson 3 e falhar ao mapear JsonNode.
                 String raw = restClient.post()
-                        .uri(MESSAGES_URI)
-                        .header("x-api-key", requireApiKey())
+                        .uri(CHAT_URI)
                         .body(payload)
                         .retrieve()
                         .body(String.class);
                 if (raw == null || raw.isBlank()) {
-                    throw new ExtractionFailedException("A Anthropic devolveu uma resposta vazia");
+                    throw new ExtractionFailedException("O Ollama devolveu uma resposta vazia");
                 }
                 return parse(raw);
             } catch (RestClientResponseException e) {
-                // 4xx é erro permanente (chave inválida, payload malformado): repetir só gasta tempo.
                 if (!isRetryable(e.getStatusCode())) {
-                    throw new ExtractionFailedException("Falha na chamada à Anthropic (HTTP "
+                    throw new ExtractionFailedException("Falha na chamada ao Ollama (HTTP "
                             + e.getStatusCode().value() + "): " + e.getResponseBodyAsString());
                 }
                 lastFailure = e;
-                log.warn("Tentativa {}/{} da chamada à Anthropic falhou com HTTP {}",
+                log.warn("Tentativa {}/{} da chamada ao Ollama falhou com HTTP {}",
                         attempt, attempts, e.getStatusCode().value());
             } catch (ResourceAccessException e) {
                 lastFailure = e;
-                log.warn("Tentativa {}/{} da chamada à Anthropic falhou por erro de conexão: {}",
+                log.warn("Tentativa {}/{} da chamada ao Ollama falhou por erro de conexão/timeout: {}",
                         attempt, attempts, e.getMessage());
             }
 
@@ -155,15 +146,17 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
             }
         }
 
-        throw new ExtractionFailedException("Falha ao chamar o serviço de IA após " + attempts + " tentativas: "
-                + (lastFailure != null ? lastFailure.getMessage() : "erro desconhecido"));
+        throw new ExtractionFailedException("Falha ao chamar o Ollama após " + attempts + " tentativas: "
+                + (lastFailure != null ? lastFailure.getMessage() : "erro desconhecido")
+                + ". Verifique se o serviço está no ar em " + properties.getBaseUrl()
+                + " e se o modelo '" + properties.getModel() + "' foi baixado (ollama pull).");
     }
 
     private String serialize(ObjectNode body) {
         try {
             return objectMapper.writeValueAsString(body);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Falha ao serializar o corpo da requisição para a Anthropic", e);
+            throw new IllegalStateException("Falha ao serializar o corpo da requisição para o Ollama", e);
         }
     }
 
@@ -171,17 +164,8 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
         try {
             return objectMapper.readTree(raw);
         } catch (JsonProcessingException e) {
-            throw new ExtractionFailedException("A Anthropic devolveu um corpo que não é JSON válido");
+            throw new ExtractionFailedException("O Ollama devolveu um corpo que não é JSON válido");
         }
-    }
-
-    private String requireApiKey() {
-        String apiKey = properties.getApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new ExtractionFailedException("Chave da API da Anthropic não configurada. Defina a variável de "
-                    + "ambiente ANTHROPIC_API_KEY (ou a propriedade dateca.ai.anthropic.api-key).");
-        }
-        return apiKey;
     }
 
     private boolean isRetryable(HttpStatusCode status) {
@@ -197,10 +181,29 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
         }
     }
 
-    private JsonNode findToolInput(JsonNode response, String toolName) {
-        for (JsonNode block : response.path("content")) {
-            if ("tool_use".equals(block.path("type").asText()) && toolName.equals(block.path("name").asText())) {
-                return block.path("input");
+    /**
+     * No formato compatível com OpenAI, {@code arguments} é uma <em>string</em> JSON (não um
+     * objeto), então precisa ser parseada. É aqui que o "nunca parsear prosa" se mantém: só
+     * lemos o objeto que o modelo produziu contra o schema da ferramenta.
+     */
+    private JsonNode findToolArguments(JsonNode choice, String toolName) {
+        for (JsonNode toolCall : choice.path("message").path("tool_calls")) {
+            JsonNode function = toolCall.path("function");
+            if (toolName.equals(function.path("name").asText())) {
+                JsonNode arguments = function.path("arguments");
+                if (arguments.isObject()) {
+                    return arguments;
+                }
+                String raw = arguments.asText("");
+                if (raw.isBlank()) {
+                    return null;
+                }
+                try {
+                    return objectMapper.readTree(raw);
+                } catch (JsonProcessingException e) {
+                    throw new ExtractionFailedException(
+                            "O Ollama retornou argumentos de ferramenta que não são JSON válido para " + toolName);
+                }
             }
         }
         return null;
@@ -208,42 +211,64 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
 
     private ObjectNode buildRequestBody(String toolName, String systemPrompt, String schemaJson,
                                          List<PageInput> pages, int maxTokens) {
+        ObjectNode function = objectMapper.createObjectNode();
+        function.put("name", toolName);
+        function.put("description", ExtractionPrompts.TOOL_DESCRIPTION);
+        function.set("parameters", parseSchema(schemaJson));
+
         ObjectNode tool = objectMapper.createObjectNode();
-        tool.put("name", toolName);
-        tool.put("description", ExtractionPrompts.TOOL_DESCRIPTION);
-        tool.set("input_schema", parseSchema(schemaJson));
+        tool.put("type", "function");
+        tool.set("function", function);
 
-        ArrayNode content = objectMapper.createArrayNode();
-        for (PageInput page : pages) {
-            content.add(page.isImage() ? imageBlock(page) : textBlock(page));
-        }
+        ObjectNode systemMessage = objectMapper.createObjectNode();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", systemPrompt);
 
-        ObjectNode message = objectMapper.createObjectNode();
-        message.put("role", "user");
-        message.set("content", content);
+        ObjectNode userMessage = objectMapper.createObjectNode();
+        userMessage.put("role", "user");
+        userMessage.set("content", buildUserContent(pages));
 
         ObjectNode toolChoice = objectMapper.createObjectNode();
-        toolChoice.put("type", "tool");
-        toolChoice.put("name", toolName);
+        toolChoice.put("type", "function");
+        ObjectNode toolChoiceFunction = objectMapper.createObjectNode();
+        toolChoiceFunction.put("name", toolName);
+        toolChoice.set("function", toolChoiceFunction);
 
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", properties.getModel());
         body.put("max_tokens", maxTokens);
-        body.put("system", systemPrompt);
-        body.set("messages", objectMapper.createArrayNode().add(message));
+        body.set("messages", objectMapper.createArrayNode().add(systemMessage).add(userMessage));
         body.set("tools", objectMapper.createArrayNode().add(tool));
         body.set("tool_choice", toolChoice);
         return body;
     }
 
+    /**
+     * Conteúdo da mensagem do usuário. Páginas de texto viram blocos de texto; páginas de imagem
+     * viram {@code image_url} com data URI base64 (formato compatível com OpenAI). O caminho de
+     * imagem só funciona com um modelo de visão configurado — o roteamento padrão manda imagens
+     * para a Anthropic, mas o suporte fica aqui para quem quiser um modelo local multimodal.
+     */
+    private ArrayNode buildUserContent(List<PageInput> pages) {
+        ArrayNode content = objectMapper.createArrayNode();
+        for (PageInput page : pages) {
+            if (page.isImage()) {
+                content.add(imageBlock(page));
+            } else {
+                content.add(textBlock(page));
+            }
+        }
+        return content;
+    }
+
     private ObjectNode imageBlock(PageInput page) {
+        ObjectNode imageUrl = objectMapper.createObjectNode();
+        imageUrl.put("url", "data:" + page.imageMediaType() + ";base64,"
+                + Base64.getEncoder().encodeToString(page.imageBytes()));
+
         ObjectNode block = objectMapper.createObjectNode();
-        block.put("type", "image");
-        ObjectNode source = objectMapper.createObjectNode();
-        source.put("type", "base64");
-        source.put("media_type", page.imageMediaType());
-        source.put("data", Base64.getEncoder().encodeToString(page.imageBytes()));
-        block.set("source", source);
+        block.put("type", "image_url");
+        block.set("image_url", imageUrl);
         return block;
     }
 

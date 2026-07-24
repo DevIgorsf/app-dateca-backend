@@ -7,6 +7,7 @@ import com.dat.dateca.importacao.domain.ports.CoverExtractionResult;
 import com.dat.dateca.importacao.domain.ports.ExtractedImage;
 import com.dat.dateca.importacao.domain.ports.PageContent;
 import com.dat.dateca.importacao.domain.ports.PdfTextExtractionPort;
+import com.dat.dateca.importacao.domain.ports.QuestionExtractionBatch;
 import com.dat.dateca.importacao.domain.ports.QuestionExtractionResult;
 import com.dat.dateca.importacao.domain.ports.VisionExtractionPort;
 import com.dat.dateca.importacao.infrastructure.persistence.ImportJobRepository;
@@ -26,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -105,8 +108,8 @@ class PdfImportProcessorTest {
                 'B', false, false, 5);
 
         when(visionExtractionPort.extractQuestions(any()))
-                .thenReturn(List.of(question1, question2Partial))
-                .thenReturn(List.of(question2Complete));
+                .thenReturn(QuestionExtractionBatch.complete(List.of(question1, question2Partial)))
+                .thenReturn(QuestionExtractionBatch.complete(List.of(question2Complete)));
 
         processor.process(jobId);
 
@@ -145,12 +148,121 @@ class PdfImportProcessorTest {
         QuestionExtractionResult questionSemGabarito = new QuestionExtractionResult(1, "Enunciado",
                 List.of(new AlternativeExtractionResult('A', "Alt A"), new AlternativeExtractionResult('B', "Alt B")),
                 null, false, false, 1);
-        when(visionExtractionPort.extractQuestions(any())).thenReturn(List.of(questionSemGabarito));
+        when(visionExtractionPort.extractQuestions(any()))
+                .thenReturn(QuestionExtractionBatch.complete(List.of(questionSemGabarito)));
         when(visionExtractionPort.extractAnswerKey(any())).thenReturn(Map.of(1, 'A'));
 
         processor.process(jobId);
 
         var question = job.getExamDraft().getQuestions().get(0);
         assertThat(question.getCorrectAlternativeLabel()).isEqualTo('A');
+    }
+
+    @Test
+    void processDetectsAnswerKeyOnFullyScannedExamWithoutNativeText() {
+        UUID jobId = UUID.randomUUID();
+        ImportJob job = new ImportJob("prova-escaneada.pdf", 100L, "storage-key", 1L);
+        when(importJobRepository.findById(jobId)).thenReturn(Optional.of(job));
+
+        byte[] pdfBytes = "pdf-bytes".getBytes();
+        when(fileStoragePort.load("storage-key")).thenReturn(pdfBytes);
+        when(pdfTextExtractionPort.countPages(pdfBytes)).thenReturn(2);
+
+        // Prova 100% escaneada: nenhuma pagina tem texto nativo, entao o filtro antigo (que exigia
+        // hasNativeText + palavra "GABARITO") nunca acharia a pagina de gabarito.
+        when(pdfTextExtractionPort.extractPage(pdfBytes, 1))
+                .thenReturn(new PageContent(1, null, false, true, false));
+        when(pdfTextExtractionPort.extractPage(pdfBytes, 2))
+                .thenReturn(new PageContent(2, null, false, true, false));
+        lenient().when(pdfTextExtractionPort.extractEmbeddedImages(any(), anyInt())).thenReturn(List.of());
+        when(pdfTextExtractionPort.rasterizePage(any(), anyInt(), anyInt())).thenReturn("img".getBytes());
+
+        when(visionExtractionPort.extractCover(any()))
+                .thenReturn(new CoverExtractionResult("Prova", "Instituição", 2025, "Ed 1", "Geral", "raw"));
+
+        QuestionExtractionResult questionSemGabarito = new QuestionExtractionResult(1, "Enunciado",
+                List.of(new AlternativeExtractionResult('A', "Alt A"), new AlternativeExtractionResult('B', "Alt B")),
+                null, false, false, 1);
+        when(visionExtractionPort.extractQuestions(any()))
+                .thenReturn(QuestionExtractionBatch.complete(List.of(questionSemGabarito)));
+        // A pagina de gabarito escaneada e alcancada pela janela de fallback e o modelo devolve o par.
+        when(visionExtractionPort.extractAnswerKey(any())).thenReturn(Map.of(1, 'C'));
+
+        processor.process(jobId);
+
+        // extractAnswerKey foi chamado mesmo sem texto nativo, e a resposta foi aplicada.
+        verify(visionExtractionPort).extractAnswerKey(any());
+        assertThat(job.getExamDraft().getQuestions().get(0).getCorrectAlternativeLabel()).isEqualTo('C');
+    }
+
+    @Test
+    void processSplitsTruncatedBlockAndRecoversAllQuestions() {
+        UUID jobId = UUID.randomUUID();
+        ImportJob job = new ImportJob("prova.pdf", 100L, "storage-key", 1L);
+        when(importJobRepository.findById(jobId)).thenReturn(Optional.of(job));
+
+        byte[] pdfBytes = "pdf-bytes".getBytes();
+        when(fileStoragePort.load("storage-key")).thenReturn(pdfBytes);
+        when(pdfTextExtractionPort.countPages(pdfBytes)).thenReturn(2);
+        when(pdfTextExtractionPort.extractPage(pdfBytes, 1))
+                .thenReturn(new PageContent(1, "questão 1", true, false, false));
+        when(pdfTextExtractionPort.extractPage(pdfBytes, 2))
+                .thenReturn(new PageContent(2, "questão 2", true, false, false));
+        lenient().when(pdfTextExtractionPort.extractEmbeddedImages(any(), anyInt())).thenReturn(List.of());
+
+        when(visionExtractionPort.extractCover(any()))
+                .thenReturn(new CoverExtractionResult("Prova", "Inst", 2025, "Ed", "Geral", "raw"));
+
+        QuestionExtractionResult q1 = new QuestionExtractionResult(1, "Enunciado 1",
+                List.of(new AlternativeExtractionResult('A', "a"), new AlternativeExtractionResult('B', "b")),
+                'A', false, false, 1);
+        QuestionExtractionResult q2 = new QuestionExtractionResult(2, "Enunciado 2",
+                List.of(new AlternativeExtractionResult('A', "a"), new AlternativeExtractionResult('B', "b")),
+                'B', false, false, 2);
+
+        // 1ª chamada (bloco de 2 páginas) vem TRUNCADA e só traz a questão 1 (a 2 foi cortada).
+        // Depois o processor divide o bloco: página 1 e página 2 são reprocessadas isoladamente.
+        when(visionExtractionPort.extractQuestions(any()))
+                .thenReturn(QuestionExtractionBatch.truncated(List.of(q1)))
+                .thenReturn(QuestionExtractionBatch.complete(List.of(q1)))
+                .thenReturn(QuestionExtractionBatch.complete(List.of(q2)));
+
+        processor.process(jobId);
+
+        assertThat(job.getStatus()).isEqualTo(ImportStatus.AGUARDANDO_REVISAO);
+        // Sem o split, a questão 2 (cortada na resposta truncada) teria sumido silenciosamente.
+        assertThat(job.getExamDraft().getQuestions()).hasSize(2);
+        // O bloco foi chamado 3x: 1 truncada + 2 metades.
+        verify(visionExtractionPort, times(3)).extractQuestions(any());
+    }
+
+    @Test
+    void processMarksQuestionForReviewWhenSinglePageStaysTruncated() {
+        UUID jobId = UUID.randomUUID();
+        ImportJob job = new ImportJob("prova.pdf", 100L, "storage-key", 1L);
+        when(importJobRepository.findById(jobId)).thenReturn(Optional.of(job));
+
+        byte[] pdfBytes = "pdf-bytes".getBytes();
+        when(fileStoragePort.load("storage-key")).thenReturn(pdfBytes);
+        when(pdfTextExtractionPort.countPages(pdfBytes)).thenReturn(1);
+        when(pdfTextExtractionPort.extractPage(pdfBytes, 1))
+                .thenReturn(new PageContent(1, "questão enorme", true, false, false));
+        lenient().when(pdfTextExtractionPort.extractEmbeddedImages(any(), anyInt())).thenReturn(List.of());
+
+        when(visionExtractionPort.extractCover(any()))
+                .thenReturn(new CoverExtractionResult("Prova", "Inst", 2025, "Ed", "Geral", "raw"));
+
+        QuestionExtractionResult parcial = new QuestionExtractionResult(1, "Enunciado parcial",
+                List.of(new AlternativeExtractionResult('A', "a")), null, false, false, 1);
+        // Página única que continua truncada: não há como dividir mais, então marca para revisão.
+        when(visionExtractionPort.extractQuestions(any()))
+                .thenReturn(QuestionExtractionBatch.truncated(List.of(parcial)));
+
+        processor.process(jobId);
+
+        var question = job.getExamDraft().getQuestions().get(0);
+        assertThat(question.isNeedsReview()).isTrue();
+        // Uma única página truncada é chamada só uma vez (não há divisão possível).
+        verify(visionExtractionPort, times(1)).extractQuestions(any());
     }
 }
