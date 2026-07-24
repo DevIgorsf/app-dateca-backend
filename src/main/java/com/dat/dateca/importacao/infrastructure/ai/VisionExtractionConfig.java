@@ -19,6 +19,10 @@ import org.springframework.context.annotation.Configuration;
  *   contêm páginas rasterizadas (provas escaneadas) continuam na Anthropic, por serem mais
  *   exigentes em qualidade de visão. Requer o Ollama no ar; requer a chave da Anthropic apenas se
  *   aparecerem páginas escaneadas.</li>
+ *   <li>{@code ollama-only} — 100% local: texto <em>e</em> imagens vão para o Ollama, a Anthropic
+ *   nunca é usada (não precisa de chave). Para provas escaneadas o modelo configurado em
+ *   {@code dateca.ai.ollama.model} precisa ter suporte a visão (ex.: {@code llama3.2-vision},
+ *   {@code qwen2.5vl}, {@code minicpm-v}); um modelo só de texto ignora as imagens.</li>
  * </ul>
  *
  * <p>As dependências entram como parâmetros dos métodos {@code @Bean} (não no construtor da classe)
@@ -57,12 +61,18 @@ public class VisionExtractionConfig {
                         new OllamaVisionExtractionAdapter(ollamaProperties, objectMapper);
                 yield new RoutingVisionExtractionAdapter(ollamaAdapter, anthropicAdapter);
             }
+            case "ollama-only" -> {
+                log.info("Provedor de extração por visão: OLLAMA-ONLY (tudo — texto e imagens — local em {} "
+                                + "usando o modelo '{}'; a Anthropic não é usada)",
+                        ollamaProperties.getBaseUrl(), ollamaProperties.getModel());
+                yield new OllamaVisionExtractionAdapter(ollamaProperties, objectMapper);
+            }
             case "anthropic" -> {
                 log.info("Provedor de extração por visão: ANTHROPIC (modelo '{}')", anthropicProperties.getModel());
                 yield anthropicAdapter;
             }
             default -> throw new IllegalStateException("vision-extraction.provider inválido: '" + provider
-                    + "'. Valores aceitos: anthropic, ollama.");
+                    + "'. Valores aceitos: anthropic, ollama, ollama-only.");
         };
     }
 }

@@ -36,6 +36,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/aluno/cadastrar").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/prova/admin", "/prova/admin/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/professor/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/materia/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/questao/**").hasAnyAuthority("ADMIN", "PROFESSOR")

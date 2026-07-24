@@ -58,6 +58,31 @@ public class ProvaService {
         return new ProvaDetalheDTO(prova, provaSubmissaoRepository.countByProva_Id(id));
     }
 
+    @Transactional(readOnly = true)
+    public List<ProvaAdminResumoDTO> listarTodas() {
+        List<Prova> provas = provaRepository.findAllByOrderByCriadaEmDesc();
+
+        Set<UUID> criadorIds = provas.stream().map(Prova::getCriadorId).collect(Collectors.toSet());
+        Map<UUID, String> nomesPorCriador = studentRepository.findAllById(criadorIds).stream()
+                .collect(Collectors.toMap(Student::getId, Student::getName));
+
+        return provas.stream()
+                .map(prova -> new ProvaAdminResumoDTO(
+                        prova,
+                        provaSubmissaoRepository.countByProva_Id(prova.getId()),
+                        nomesPorCriador.getOrDefault(prova.getCriadorId(), "Desconhecido")))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProvaAdminDetalheDTO buscarDetalheAdmin(UUID id) {
+        Prova prova = getProvaOrThrow(id);
+        String criadorNome = studentRepository.findById(prova.getCriadorId())
+                .map(Student::getName)
+                .orElse("Desconhecido");
+        return new ProvaAdminDetalheDTO(prova, provaSubmissaoRepository.countByProva_Id(id), criadorNome);
+    }
+
     @Transactional
     public ProvaDetalheDTO criar(ProvaForm form, Student current) {
         boolean publicar = deveSerPublicada(form);

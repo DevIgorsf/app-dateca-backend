@@ -1,5 +1,7 @@
 package com.dat.dateca.controller;
 
+import com.dat.dateca.domain.prova.ProvaAdminDetalheDTO;
+import com.dat.dateca.domain.prova.ProvaAdminResumoDTO;
 import com.dat.dateca.domain.prova.ProvaAlunoDTO;
 import com.dat.dateca.domain.prova.ProvaCapaDTO;
 import com.dat.dateca.domain.prova.ProvaDetalheDTO;
@@ -50,6 +52,16 @@ public class ProvaController {
     public ResponseEntity<List<ProvaResumoDTO>> listarPublicas() {
         Student current = studentService.getAuthenticatedStudent();
         return ResponseEntity.ok(provaService.listarPublicas(current));
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<ProvaAdminResumoDTO>> listarTodas() {
+        return ResponseEntity.ok(provaService.listarTodas());
+    }
+
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<ProvaAdminDetalheDTO> buscarDetalheAdmin(@PathVariable UUID id) {
+        return ResponseEntity.ok(provaService.buscarDetalheAdmin(id));
     }
 
     @GetMapping("/{id}")

@@ -10,4 +10,6 @@ public interface ProvaRepository extends JpaRepository<Prova, UUID> {
     List<Prova> findByCriadorIdOrderByCriadaEmDesc(UUID criadorId);
 
     List<Prova> findByPublicadaTrueOrderByCriadaEmDesc();
+
+    List<Prova> findAllByOrderByCriadaEmDesc();
 }
