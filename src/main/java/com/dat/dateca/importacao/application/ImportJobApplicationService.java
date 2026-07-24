@@ -27,6 +27,8 @@ import com.dat.dateca.importacao.infrastructure.persistence.ImportJobRepository;
 import com.dat.dateca.shared.storage.FileStoragePort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -85,9 +87,29 @@ public class ImportJobApplicationService {
         ImportJob job = new ImportJob(file.getOriginalFilename(), file.getSize(), storageKey, createdByUserId);
         importJobRepository.save(job);
 
-        importJobDispatcher.dispatch(job.getId());
+        dispatchAfterCommit(job.getId());
 
         return new UploadImportResult(job.getId(), job.getStatus());
+    }
+
+    /**
+     * Dispara o processamento assíncrono somente após o commit desta transação. Se disparássemos
+     * ainda dentro dela, a thread do {@code importTaskExecutor} abriria a própria transação e faria
+     * {@code findById} antes do commit — não enxergaria a linha recém-inserida (READ_COMMITTED) e
+     * abortaria como "importação não encontrada". Sem transação ativa (ex.: teste unitário), cai
+     * para o disparo direto.
+     */
+    private void dispatchAfterCommit(UUID importJobId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    importJobDispatcher.dispatch(importJobId);
+                }
+            });
+        } else {
+            importJobDispatcher.dispatch(importJobId);
+        }
     }
 
     @Transactional(readOnly = true)

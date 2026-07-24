@@ -42,6 +42,13 @@ public class StudentService {
         return new StudentDTO(student);
     }
 
+    public List<StudentDTO> getAllStudents() {
+        return studentRepository.findAll()
+                .stream()
+                .map(StudentDTO::new)
+                .collect(Collectors.toList());
+    }
+
     public List<StudentWithIndex> rankingStudent(String registrationNumber) {
         List<Student> allStudents = studentRepository.findAllByOrderByPointsDesc();
         Student student = studentRepository.findByRegistrationNumber(registrationNumber);

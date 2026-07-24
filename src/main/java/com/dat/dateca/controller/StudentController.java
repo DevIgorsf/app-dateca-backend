@@ -31,6 +31,11 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.cadastroAluno(studentCadastro));
     }
 
+    @GetMapping
+    public ResponseEntity<List<StudentDTO>> getAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(studentService.getAllStudents());
+    }
+
     @GetMapping("/ranking")
     public ResponseEntity<List<StudentWithIndex>> rankingStudent(HttpServletRequest request) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
