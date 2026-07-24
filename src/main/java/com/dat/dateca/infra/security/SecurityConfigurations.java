@@ -40,7 +40,7 @@ public class SecurityConfigurations implements WebMvcConfigurer {
                         .requestMatchers(HttpMethod.DELETE, "/materia/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/questao/**").hasAnyAuthority("ADMIN", "PROFESSOR")
                         .requestMatchers(HttpMethod.DELETE, "/enade/**").hasAnyAuthority("ADMIN", "PROFESSOR")
-                        .requestMatchers("/importacao/**").hasAnyAuthority("ADMIN", "PROFESSOR")
+                        .requestMatchers("/importacao/**").authenticated()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/", "/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs.yaml").permitAll()
                         .anyRequest().authenticated()
