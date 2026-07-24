@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +26,10 @@ import java.util.Map;
 /**
  * Implementação local de {@link VisionExtractionPort} contra o Ollama, pela API compatível com o
  * formato OpenAI ({@code /v1/chat/completions}). Reproduz as mesmas três chamadas e os mesmos
- * schemas do adapter da Anthropic (ver {@link ExtractionPrompts}), usando tool calling para forçar
- * a saída estruturada — mantendo o princípio de nunca parsear prosa.
+ * schemas do adapter da Anthropic (ver {@link ExtractionPrompts}), usando <em>structured outputs</em>
+ * ({@code response_format} com json_schema) para forçar a saída ao schema — mantendo o princípio de
+ * nunca parsear prosa. Optou-se por structured outputs em vez de tool calling porque modelos locais
+ * menores não respeitam o schema no caminho de {@code tools} (ver {@link #buildRequestBody}).
  *
  * <p>Uso pretendido como provedor de desenvolvimento/MVP para o caminho de <em>texto nativo</em>. O
  * caminho de páginas rasterizadas (provas escaneadas) fica no adapter da Anthropic via
@@ -44,6 +48,8 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
     private final ObjectMapper objectMapper;
 
     public OllamaVisionExtractionAdapter(OllamaProperties properties, ObjectMapper objectMapper) {
+        // A resposta é lida via exchange() (ver post()), sem conversor de leitura — resolve o
+        // application/octet-stream que o Ollama negocia com o cliente Java. Builder pelado basta.
         this(properties, objectMapper, RestClient.builder()
                 .requestFactory(RestClientFactories.withTimeouts(properties.getConnectTimeout(), properties.getReadTimeout()))
                 .baseUrl(properties.getBaseUrl())
@@ -86,9 +92,10 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
         while (true) {
             JsonNode response = post(buildRequestBody(toolName, systemPrompt, schemaJson, pages, maxTokens));
             JsonNode choice = response.path("choices").path(0);
-            JsonNode input = findToolArguments(choice, toolName);
+            boolean truncated = FINISH_REASON_LENGTH.equals(choice.path("finish_reason").asText(""));
+            JsonNode input = extractStructuredContent(choice, toolName, truncated);
 
-            if (!FINISH_REASON_LENGTH.equals(choice.path("finish_reason").asText(""))) {
+            if (!truncated) {
                 if (input == null) {
                     throw new ExtractionFailedException(
                             "O Ollama não retornou o resultado estruturado esperado para " + toolName);
@@ -116,27 +123,31 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                // Serializa/parseia com o ObjectMapper (Jackson 2) em vez dos conversores do
-                // RestClient — o Spring 7 pode preferir Jackson 3 e falhar ao mapear JsonNode.
-                String raw = restClient.post()
+                // exchange() lê o corpo cru sem passar por um conversor de leitura — o Ollama negocia
+                // application/octet-stream com o cliente Java, que os conversores default não leem.
+                // Parseamos os bytes com o ObjectMapper (Jackson 2), independente do mapper do contexto.
+                RawResponse raw = restClient.post()
                         .uri(CHAT_URI)
                         .body(payload)
-                        .retrieve()
-                        .body(String.class);
-                if (raw == null || raw.isBlank()) {
-                    throw new ExtractionFailedException("O Ollama devolveu uma resposta vazia");
+                        .exchange((request, response) -> new RawResponse(
+                                response.getStatusCode(), response.getBody().readAllBytes()), false);
+
+                if (raw.status().is2xxSuccessful()) {
+                    if (raw.body().length == 0) {
+                        throw new ExtractionFailedException("O Ollama devolveu uma resposta vazia");
+                    }
+                    return parse(raw.body());
                 }
-                return parse(raw);
-            } catch (RestClientResponseException e) {
-                if (!isRetryable(e.getStatusCode())) {
+
+                if (!isRetryable(raw.status())) {
                     throw new ExtractionFailedException("Falha na chamada ao Ollama (HTTP "
-                            + e.getStatusCode().value() + "): " + e.getResponseBodyAsString());
+                            + raw.status().value() + "): " + new String(raw.body(), StandardCharsets.UTF_8));
                 }
-                lastFailure = e;
+                lastFailure = new ExtractionFailedException("HTTP " + raw.status().value());
                 log.warn("Tentativa {}/{} da chamada ao Ollama falhou com HTTP {}",
-                        attempt, attempts, e.getStatusCode().value());
-            } catch (ResourceAccessException e) {
-                lastFailure = e;
+                        attempt, attempts, raw.status().value());
+            } catch (ResourceAccessException | UncheckedIOException e) {
+                lastFailure = e instanceof RuntimeException re ? re : new ExtractionFailedException(e.getMessage());
                 log.warn("Tentativa {}/{} da chamada ao Ollama falhou por erro de conexão/timeout: {}",
                         attempt, attempts, e.getMessage());
             }
@@ -160,10 +171,10 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
         }
     }
 
-    private JsonNode parse(String raw) {
+    private JsonNode parse(byte[] raw) {
         try {
             return objectMapper.readTree(raw);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new ExtractionFailedException("O Ollama devolveu um corpo que não é JSON válido");
         }
     }
@@ -182,43 +193,47 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
     }
 
     /**
-     * No formato compatível com OpenAI, {@code arguments} é uma <em>string</em> JSON (não um
-     * objeto), então precisa ser parseada. É aqui que o "nunca parsear prosa" se mantém: só
-     * lemos o objeto que o modelo produziu contra o schema da ferramenta.
+     * A saída estruturada volta em {@code choices[0].message.content} como uma <em>string</em> JSON
+     * (o modelo é forçado ao schema por gramática restrita — ver {@code response_format} em
+     * {@link #buildRequestBody}). É aqui que o "nunca parsear prosa" se mantém: só lemos o JSON que
+     * o modelo produziu, restrito ao schema.
+     *
+     * <p>Numa resposta truncada o JSON parcial não parseia; devolvemos {@code null} sem erro para
+     * o chamador escalar {@code num_predict} ou dividir o bloco.
      */
-    private JsonNode findToolArguments(JsonNode choice, String toolName) {
-        for (JsonNode toolCall : choice.path("message").path("tool_calls")) {
-            JsonNode function = toolCall.path("function");
-            if (toolName.equals(function.path("name").asText())) {
-                JsonNode arguments = function.path("arguments");
-                if (arguments.isObject()) {
-                    return arguments;
-                }
-                String raw = arguments.asText("");
-                if (raw.isBlank()) {
-                    return null;
-                }
-                try {
-                    return objectMapper.readTree(raw);
-                } catch (JsonProcessingException e) {
-                    throw new ExtractionFailedException(
-                            "O Ollama retornou argumentos de ferramenta que não são JSON válido para " + toolName);
-                }
-            }
+    private JsonNode extractStructuredContent(JsonNode choice, String toolName, boolean truncated) {
+        String content = choice.path("message").path("content").asText("");
+        if (content.isBlank()) {
+            return null;
         }
-        return null;
+        try {
+            return objectMapper.readTree(content);
+        } catch (JsonProcessingException e) {
+            if (truncated) {
+                return null; // JSON cortado ao meio: esperado; deixa o chamador reprocessar
+            }
+            throw new ExtractionFailedException(
+                    "O Ollama retornou um conteúdo que não é JSON válido para " + toolName);
+        }
     }
 
+    /**
+     * Monta a requisição usando <em>structured outputs</em> do Ollama ({@code response_format} com
+     * json_schema), e não tool calling. Empiricamente, modelos locais menores (ex.: qwen2.5:7b) não
+     * respeitam o schema no caminho de {@code tools} — chamam a ferramenta mas preenchem os
+     * argumentos com campos inventados. Já o {@code response_format} força a geração ao schema por
+     * decodificação com gramática restrita, dando adesão confiável.
+     */
     private ObjectNode buildRequestBody(String toolName, String systemPrompt, String schemaJson,
                                          List<PageInput> pages, int maxTokens) {
-        ObjectNode function = objectMapper.createObjectNode();
-        function.put("name", toolName);
-        function.put("description", ExtractionPrompts.TOOL_DESCRIPTION);
-        function.set("parameters", parseSchema(schemaJson));
+        ObjectNode jsonSchema = objectMapper.createObjectNode();
+        jsonSchema.put("name", toolName);
+        jsonSchema.put("strict", true);
+        jsonSchema.set("schema", parseSchema(schemaJson));
 
-        ObjectNode tool = objectMapper.createObjectNode();
-        tool.put("type", "function");
-        tool.set("function", function);
+        ObjectNode responseFormat = objectMapper.createObjectNode();
+        responseFormat.put("type", "json_schema");
+        responseFormat.set("json_schema", jsonSchema);
 
         ObjectNode systemMessage = objectMapper.createObjectNode();
         systemMessage.put("role", "system");
@@ -228,18 +243,11 @@ public class OllamaVisionExtractionAdapter implements VisionExtractionPort {
         userMessage.put("role", "user");
         userMessage.set("content", buildUserContent(pages));
 
-        ObjectNode toolChoice = objectMapper.createObjectNode();
-        toolChoice.put("type", "function");
-        ObjectNode toolChoiceFunction = objectMapper.createObjectNode();
-        toolChoiceFunction.put("name", toolName);
-        toolChoice.set("function", toolChoiceFunction);
-
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", properties.getModel());
         body.put("max_tokens", maxTokens);
         body.set("messages", objectMapper.createArrayNode().add(systemMessage).add(userMessage));
-        body.set("tools", objectMapper.createArrayNode().add(tool));
-        body.set("tool_choice", toolChoice);
+        body.set("response_format", responseFormat);
         return body;
     }
 

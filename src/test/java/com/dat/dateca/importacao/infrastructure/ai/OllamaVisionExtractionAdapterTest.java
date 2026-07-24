@@ -3,7 +3,6 @@ package com.dat.dateca.importacao.infrastructure.ai;
 import com.dat.dateca.importacao.domain.ports.PageInput;
 import com.dat.dateca.importacao.domain.ports.QuestionExtractionBatch;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,16 +43,16 @@ class OllamaVisionExtractionAdapterTest {
     }
 
     @Test
-    void parsesToolArgumentsThatComeAsJsonString() {
-        // No formato compatível com OpenAI, "arguments" é uma STRING JSON, não um objeto.
-        String argumentsAsString = """
+    void parsesStructuredJsonFromMessageContent() {
+        // Com response_format, o JSON estruturado volta como STRING em choices[0].message.content.
+        String structuredContent = """
                 {"questions":[{"number":1,"statement":"Q1","sourcePageNumber":1,
                   "alternatives":[{"label":"A","text":"a"},{"label":"B","text":"b"}],"correctAnswer":"A"}]}
                 """;
 
         server.expect(once(), requestTo(BASE_URL + "/v1/chat/completions"))
                 .andRespond(withSuccess(
-                        chatResponse("tool_calls", ExtractionPrompts.QUESTIONS_TOOL, argumentsAsString),
+                        chatResponse("stop", structuredContent),
                         MediaType.APPLICATION_JSON));
 
         QuestionExtractionBatch batch = adapter().extractQuestions(List.of(PageInput.ofText(1, "texto")));
@@ -70,14 +69,14 @@ class OllamaVisionExtractionAdapterTest {
         properties.setMaxTokens(400);
         properties.setMaxTokensCeiling(400); // sem espaço para escalar
 
-        String argumentsAsString = """
+        String structuredContent = """
                 {"questions":[{"number":1,"statement":"Q1","sourcePageNumber":1,
                   "alternatives":[{"label":"A","text":"a"}]}]}
                 """;
 
         server.expect(once(), requestTo(BASE_URL + "/v1/chat/completions"))
                 .andRespond(withSuccess(
-                        chatResponse("length", ExtractionPrompts.QUESTIONS_TOOL, argumentsAsString),
+                        chatResponse("length", structuredContent),
                         MediaType.APPLICATION_JSON));
 
         QuestionExtractionBatch batch = adapter().extractQuestions(List.of(PageInput.ofText(1, "texto")));
@@ -87,19 +86,10 @@ class OllamaVisionExtractionAdapterTest {
         assertThat(batch.questions()).hasSize(1);
     }
 
-    /** Monta a resposta no formato OpenAI, com "arguments" como string JSON. */
-    private String chatResponse(String finishReason, String toolName, String argumentsJsonString) {
-        ObjectNode function = objectMapper.createObjectNode();
-        function.put("name", toolName);
-        function.put("arguments", argumentsJsonString); // string, não objeto
-
-        ObjectNode toolCall = objectMapper.createObjectNode();
-        toolCall.set("function", function);
-
-        ArrayNode toolCalls = objectMapper.createArrayNode().add(toolCall);
-
+    /** Monta a resposta no formato OpenAI structured outputs: JSON estruturado em message.content. */
+    private String chatResponse(String finishReason, String structuredJsonContent) {
         ObjectNode message = objectMapper.createObjectNode();
-        message.set("tool_calls", toolCalls);
+        message.put("content", structuredJsonContent);
 
         ObjectNode choice = objectMapper.createObjectNode();
         choice.put("finish_reason", finishReason);

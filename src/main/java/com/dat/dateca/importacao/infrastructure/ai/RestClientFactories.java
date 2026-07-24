@@ -6,9 +6,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import java.time.Duration;
 
 /**
- * Fábrica de {@link ClientHttpRequestFactory} com timeouts explícitos. A inferência local em CPU é
- * lenta, então cada adapter configura os seus próprios (o do Ollama é bem mais generoso que o da
- * Anthropic) em vez de herdar o default do {@code RestClient}.
+ * Timeouts explícitos para o {@code RestClient} dos adapters de IA. Inferência local em CPU é
+ * lenta, então cada adapter configura os seus (o do Ollama é bem mais generoso que o da Anthropic).
  */
 final class RestClientFactories {
 

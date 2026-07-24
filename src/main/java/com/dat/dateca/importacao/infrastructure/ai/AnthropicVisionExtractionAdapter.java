@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,9 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
     private final ObjectMapper objectMapper;
 
     public AnthropicVisionExtractionAdapter(AnthropicProperties properties, ObjectMapper objectMapper) {
+        // A leitura da resposta é feita via exchange() (ver post()), sem conversor de leitura, então
+        // o builder pelado basta — não dependemos de um bean RestClient.Builder (que o Spring Boot 4
+        // não auto-configura) nem do conjunto de conversores do contexto.
         this(properties, objectMapper, RestClient.builder()
                 .requestFactory(RestClientFactories.withTimeouts(properties.getConnectTimeout(), properties.getReadTimeout()))
                 .baseUrl(properties.getBaseUrl())
@@ -118,34 +123,39 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
     private JsonNode post(ObjectNode body) {
         int attempts = Math.max(1, properties.getMaxRetries() + 1);
         String payload = serialize(body);
+        String apiKey = requireApiKey();
         RuntimeException lastFailure = null;
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                // Serializamos/parseamos com o ObjectMapper (Jackson 2) em vez de deixar a cargo dos
-                // conversores do RestClient — o Spring 7 pode preferir Jackson 3 e falhar ao mapear
-                // com.fasterxml.jackson.databind.JsonNode.
-                String raw = restClient.post()
+                // exchange() dá acesso ao corpo cru da resposta, sem passar por um HttpMessageConverter
+                // de leitura — o Ollama/serviços podem negociar application/octet-stream, que os
+                // conversores default não leem. Lemos os bytes e parseamos com o ObjectMapper (Jackson 2),
+                // independente do mapper do contexto (Jackson 3 no Spring 7).
+                RawResponse raw = restClient.post()
                         .uri(MESSAGES_URI)
-                        .header("x-api-key", requireApiKey())
+                        .header("x-api-key", apiKey)
                         .body(payload)
-                        .retrieve()
-                        .body(String.class);
-                if (raw == null || raw.isBlank()) {
-                    throw new ExtractionFailedException("A Anthropic devolveu uma resposta vazia");
+                        .exchange((request, response) -> new RawResponse(
+                                response.getStatusCode(), response.getBody().readAllBytes()), false);
+
+                if (raw.status().is2xxSuccessful()) {
+                    if (raw.body().length == 0) {
+                        throw new ExtractionFailedException("A Anthropic devolveu uma resposta vazia");
+                    }
+                    return parse(raw.body());
                 }
-                return parse(raw);
-            } catch (RestClientResponseException e) {
+
                 // 4xx é erro permanente (chave inválida, payload malformado): repetir só gasta tempo.
-                if (!isRetryable(e.getStatusCode())) {
+                if (!isRetryable(raw.status())) {
                     throw new ExtractionFailedException("Falha na chamada à Anthropic (HTTP "
-                            + e.getStatusCode().value() + "): " + e.getResponseBodyAsString());
+                            + raw.status().value() + "): " + new String(raw.body(), StandardCharsets.UTF_8));
                 }
-                lastFailure = e;
+                lastFailure = new ExtractionFailedException("HTTP " + raw.status().value());
                 log.warn("Tentativa {}/{} da chamada à Anthropic falhou com HTTP {}",
-                        attempt, attempts, e.getStatusCode().value());
-            } catch (ResourceAccessException e) {
-                lastFailure = e;
+                        attempt, attempts, raw.status().value());
+            } catch (ResourceAccessException | UncheckedIOException e) {
+                lastFailure = e instanceof RuntimeException re ? re : new ExtractionFailedException(e.getMessage());
                 log.warn("Tentativa {}/{} da chamada à Anthropic falhou por erro de conexão: {}",
                         attempt, attempts, e.getMessage());
             }
@@ -167,10 +177,10 @@ public class AnthropicVisionExtractionAdapter implements VisionExtractionPort {
         }
     }
 
-    private JsonNode parse(String raw) {
+    private JsonNode parse(byte[] raw) {
         try {
             return objectMapper.readTree(raw);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new ExtractionFailedException("A Anthropic devolveu um corpo que não é JSON válido");
         }
     }

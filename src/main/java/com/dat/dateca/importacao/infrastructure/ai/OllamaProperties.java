@@ -25,8 +25,12 @@ public class OllamaProperties {
 
     private Duration connectTimeout = Duration.ofSeconds(10);
 
-    /** Leitura generosa: inferência em CPU pode passar de um minuto por bloco. */
-    private Duration readTimeout = Duration.ofMinutes(10);
+    /**
+     * Leitura bem generosa: sem GPU, medimos ~2 tokens/s neste hardware, então um bloco denso
+     * (muitas questões, schema aninhado) pode levar 15-30 min. Ajuste conforme a sua máquina — em
+     * GPU dá para reduzir bastante.
+     */
+    private Duration readTimeout = Duration.ofMinutes(30);
 
     public String getBaseUrl() {
         return baseUrl;
