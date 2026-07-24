@@ -229,7 +229,35 @@ public class ProvaService {
             throw new ProvaConflitoException("O ranking desta prova ainda não está disponível");
         }
 
-        List<ProvaSubmissao> submissoes = provaSubmissaoRepository.findByProva_IdOrderByPontuacaoDescRespondidoEmAsc(id);
+        List<ProvaSubmissao> submissoes = provaSubmissaoRepository.findByProva_IdOrderByAcertosDescRespondidoEmAsc(id);
+
+        Set<UUID> studentIds = submissoes.stream().map(ProvaSubmissao::getStudentId).collect(Collectors.toSet());
+        Map<UUID, Student> students = studentRepository.findAllById(studentIds).stream()
+                .collect(Collectors.toMap(Student::getId, s -> s));
+
+        List<ProvaRankingDTO> resultado = new ArrayList<>();
+        int posicao = 1;
+        for (ProvaSubmissao submissao : submissoes) {
+            Student student = students.get(submissao.getStudentId());
+            resultado.add(new ProvaRankingDTO(
+                    posicao++,
+                    submissao.getStudentId(),
+                    student != null ? student.getName() : "Desconhecido",
+                    submissao.getPontuacao(),
+                    submissao.getAcertos(),
+                    submissao.getRespondidoEm()
+            ));
+        }
+
+        return resultado;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProvaRankingDTO> rankingAdmin(UUID id) {
+        getProvaOrThrow(id);
+
+        List<ProvaSubmissao> submissoes =
+                provaSubmissaoRepository.findByProva_IdOrderByAcertosDescRespondidoEmAsc(id);
 
         Set<UUID> studentIds = submissoes.stream().map(ProvaSubmissao::getStudentId).collect(Collectors.toSet());
         Map<UUID, Student> students = studentRepository.findAllById(studentIds).stream()

@@ -64,6 +64,11 @@ public class ProvaController {
         return ResponseEntity.ok(provaService.buscarDetalheAdmin(id));
     }
 
+    @GetMapping("/admin/{id}/ranking")
+    public ResponseEntity<List<ProvaRankingDTO>> rankingAdmin(@PathVariable UUID id) {
+        return ResponseEntity.ok(provaService.rankingAdmin(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProvaDetalheDTO> buscarDetalhe(@PathVariable UUID id) {
         Student current = studentService.getAuthenticatedStudent();

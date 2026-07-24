@@ -11,5 +11,5 @@ public interface ProvaSubmissaoRepository extends JpaRepository<ProvaSubmissao, 
 
     boolean existsByProva_IdAndStudentId(UUID provaId, UUID studentId);
 
-    List<ProvaSubmissao> findByProva_IdOrderByPontuacaoDescRespondidoEmAsc(UUID provaId);
+    List<ProvaSubmissao> findByProva_IdOrderByAcertosDescRespondidoEmAsc(UUID provaId);
 }

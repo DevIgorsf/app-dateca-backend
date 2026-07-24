@@ -391,7 +391,7 @@ GET /prova/{id}/ranking
 200 OK -> ProvaRankingDTO[]
 ```
 
-Ordenado por pontuação decrescente (empate desempatado por quem respondeu primeiro). Erros:
+Ordenado pelo total de acertos decrescente (empate desempatado por quem respondeu primeiro). Erros:
 `404`, `403`, `409` (`rankingDisponivel` é `false` — prova ainda não está `Ativo`/`Encerrado`).
 
 ## Tabela de erros
